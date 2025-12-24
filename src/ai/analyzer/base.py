@@ -8,6 +8,4 @@ class BaseAnalyzer:
 
     def analyze(self, data: dict) -> dict:
         prompt = self.build_prompt(data)
-
-        # 🔥 KIRIM KE AI
         return call_groq(prompt)
