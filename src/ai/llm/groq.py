@@ -9,7 +9,6 @@ load_dotenv(BASE_DIR / ".env")
 
 def call_groq(prompt: str) -> str:
     api_key = os.getenv("GROQ_API_KEY")
-
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not set")
 
