@@ -1,33 +1,33 @@
-# src/ai/orchestrator.py
-from .planner import plan_scan
-from executor.runner import run_command
-from .analyzer import analyze_output
+import sys
+from pathlib import Path
 
-def orchestrate_scan(target: str) -> dict:
-    """
-    Orchestrator utama yang menggabungkan planning, execution, dan analysis.
-    """
-    # 1. Planning
-    plan = plan_scan(target)
-    if not plan or "command" not in plan:
-        return {"ok": False, "error": "planner failed"}
+# Add src directory to Python path
+BASE_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE_DIR))
+
+from src.ai.orchestrator import orchestrate_scan
+
+if __name__ == "__main__":
+    target = "https://faazamu.my.id/"
+    print("Starting scan...")
+    print(f"Target: {target}\n")
     
-    # 2. Execution
-    execution = run_command(plan["command"])
-    if not execution.get("ok"):
-        return {
-            "ok": False,
-            "error": "execution failed",
-            "details": execution
-        }
+    result = orchestrate_scan(target)
     
-    # 3. Analysis
-    analysis = analyze_output(plan["tool"], execution)
-    
-    return {
-        "ok": True,
-        "target": target,
-        "plan": plan,
-        "execution": execution,
-        "analysis": analysis
-    }
+    if result.get("ok"):
+        print("✅ Scan completed successfully!")
+        print(f"\nTool: {result['plan']['tool']}")
+        print(f"Command: {result['plan']['command']}")
+        print(f"\nAnalysis Risk: {result['analysis'].get('risk', 'unknown')}")
+        print(f"Summary: {result['analysis'].get('summary', 'N/A')}")
+        
+        # Print findings jika ada
+        if 'findings' in result['analysis']:
+            print(f"\nFindings: {len(result['analysis']['findings'])} items")
+        if 'issues' in result['analysis']:
+            print(f"\nIssues: {len(result['analysis']['issues'])} items")
+    else:
+        print("❌ Scan failed!")
+        print(f"Error: {result.get('error', 'Unknown error')}")
+        if 'details' in result:
+            print(f"Details: {result['details']}")
