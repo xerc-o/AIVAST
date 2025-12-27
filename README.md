@@ -118,5 +118,147 @@ Get detail scan tertentu.
 Delete scan tertentu.
 
 ## 🏗️ Project Structure
+<h5>
+  Create virtual environment
+</h5>
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# atau
+venv\Scripts\activate  # Windows Arguments**: Block arguments berbahaya (--script, -oA, dll)
+- **Timeout Protection**: nmap (180s), nikto (300s)
+- **Output Limit**: Maksimal 20000 karakter per output
+
+## 🛠️ Development
+
+### Running in Development Mode
+python src/app.py### Production Deployment
+Gunakan gunicorn:
+gunicorn -w 4 -b 0.0.0.0:8000 "src.app:create_app()"## 📝 Environment Variables
+
+SECRET_KEY=your-secret-key
+GROQ_API_KEY=your-groq-api-key
+DATABASE_URL=sqlite:///AIVAST.db
+FLASK_ENV=development
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+[Your License Here]
+
+## 🙏 Acknowledgments
+
+- Groq for LLM API
+- nmap and nikto projects
+- Flask community
+
+  pip install -r requirements.txtpathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
+    """Setup logger dengan file dan console handler."""
+    
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    
+    # File handler
+    file_handler = logging.FileHandler(LOG_DIR / log_file)
+    file_handler.setLevel(level)
+    
+    # Console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(level)
+    
+    # Formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
+
+  <h5>
+Install dependencies:
+    
+  </h5>
+  pip install -r requirements.txtpathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
+    """Setup logger dengan file dan console handler."""
+    
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    
+    # File handler
+    file_handler = logging.FileHandler(LOG_DIR / log_file)
+    file_handler.setLevel(level)
+    
+    # Console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(level)
+    
+    # Formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
+  <h5>
+    Setup environment variables
+  </h5>
+
+  cp .env.example .env
+# Edit .env dan masukkan GROQ_API_KEYproduction
+FLASK_ENV=development
+
+# Database
+DATABASE_URL=sqlite:///AIVAST.db
+
+# Groq API
+GROQ_API_KEY=your-groq-api-key-here
+
+<h3>
+  Usage
+</h3>
+<h5>
+  Run Flask App
+</h5>
+python src/app.pycurl -X POST http://127.0.0.1:5000/scan \
+  -H "Content-Type: application/json" \
+  -d '{"target": "scanme.nmap.org"}'
+
+Server akan berjalan di http://127.0.0.1:5000
+
+
+Test dengan cURL
+Health Check
+curl http://127.0.0.1:5000/
+Run Scan
+curl -X POST http://127.0.0.1:5000/scan \  -H "Content-Type: application/json" \  -d '{"target": "https://example.com"}'
+List All Scans
+curl http://127.0.0.1:5000/scans
+Filter Scans
+# By toolcurl http://127.0.0.1:5000/scans?tool=nikto# By risk levelcurl http://127.0.0.1:5000/scans?risk=medium# Paginationcurl http://127.0.0.1:5000/scans?page=1&per_page=10
+Get Scan Detail
+curl http://127.0.0.1:5000/scans/1
+Delete Scan
+
 
 </body>
