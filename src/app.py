@@ -12,7 +12,7 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder=BASE_DIR / 'templates')
     
     # Configuration
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-key")
