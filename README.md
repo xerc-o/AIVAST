@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AIVAST — AI Powered Security Scanner</title>
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
@@ -90,46 +90,33 @@ GROQ_API_KEY=your-groq-api-key</code></pre>
   <pre><code>curl http://127.0.0.1:5000/scans</code></pre>
 
   <h4>Filter Scans</h4>
-  <pre><code># By tool
+  <pre><code>
+# By tool
 curl http://127.0.0.1:5000/scans?tool=nikto
-
 # By risk level
 curl http://127.0.0.1:5000/scans?risk=medium
-
 # Pagination
 curl http://127.0.0.1:5000/scans?page=1&per_page=10</code></pre>
 </section>
 
 <section>
-  <h2>📝 API Endpoints</h2>
+  <h3>📝 API Endpoints</h4>
 
-  <h3>GET /</h3>
+  <h4>GET /</h4>
   <p>Health check endpoint.</p>
 
-  <h3>POST /scan</h3>
+  <h4>POST /scan</h4>
   <p>Menjalankan scanning keamanan pada target.</p>
 
-  <h3>GET /scans</h3>
+  <h4>GET /scans</h4>
   <p>Menampilkan semua scan dengan pagination & filtering.</p>
 
-  <h3>GET /scans/&lt;id&gt;</h3>
+  <h4>GET /scans/&lt;id&gt;</h4>
   <p>Detail scan tertentu.</p>
 
-  <h3>DELETE /scans/&lt;id&gt;</h3>
+  <h4>DELETE /scans/&lt;id&gt;</h4>
   <p>Menghapus scan.</p>
 </section>
-
-<section>
-  <h2>🤝 Contributing</h2>
-  <p>Contributions are welcome. Silakan submit Pull Request.</p>
-</section>
-
-<section>
-  <h2>📄 License</h2>
-  <p>[Your License Here]</p>
-</section>
-
-</main>
 
 </body>
 </html>
