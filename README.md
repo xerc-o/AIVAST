@@ -1,264 +1,135 @@
-<h2>
-  AIVAST
-</h2>
-<h5>
-  AI Powered Assesment and Scanning Tool
-</h5>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AIVAST — AI Powered Security Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
 
 <body>
-AIVAST adalah tool scanning keamanan berbasis AI yang menggunakan Groq LLM untuk menganalisis hasil scanning dari nmap dan nikto secara otomatis.
 
-## 🚀 Features
+<header>
+  <h1>AIVAST</h1>
+  <p><strong>AI Powered Assessment and Scanning Tool</strong></p>
+</header>
 
-- 🤖 **AI-Powered Analysis**: Menggunakan Groq LLM untuk analisis hasil scan
-- 🔍 **Multiple Tools**: Support untuk nmap dan nikto
-- 📊 **History Tracking**: Menyimpan semua scan history ke database
-- 🛡️ **Security Controls**: Whitelist tools, blacklist arguments, timeout protection
-- 📝 **RESTful API**: Clean API endpoints untuk integrasi
-- 🔎 **Advanced Filtering**: Filter by tool, risk level, pagination
+<main>
 
-## 📋 Requirements
+<section>
+  <p>
+    <strong>AIVAST</strong> adalah tool scanning keamanan berbasis AI yang
+    menggunakan <strong>Groq LLM</strong> untuk menganalisis hasil scanning
+    dari <strong>nmap</strong> dan <strong>nikto</strong> secara otomatis.
+  </p>
+</section>
 
-- Python 3.8+
-- nmap (installed on system)
-- nikto (installed on system)
-- Groq API Key
+<section>
+  <h2>🚀 Features</h2>
+  <ul>
+    <li>🤖 <strong>AI-Powered Analysis</strong> — Analisis hasil scan dengan Groq LLM</li>
+    <li>🔍 <strong>Multiple Tools</strong> — Mendukung nmap & nikto</li>
+    <li>📊 <strong>History Tracking</strong> — Menyimpan riwayat scan ke database</li>
+    <li>🛡️ <strong>Security Controls</strong> — Whitelist tools, blacklist arguments, timeout</li>
+    <li>📝 <strong>RESTful API</strong> — Endpoint API yang clean</li>
+    <li>🔎 <strong>Advanced Filtering</strong> — Filter tool, risk level, pagination</li>
+  </ul>
+</section>
 
-## 🔧 Installation
+<section>
+  <h2>📋 Requirements</h2>
+  <ul>
+    <li>Python 3.8+</li>
+    <li>nmap (installed on system)</li>
+    <li>nikto (installed on system)</li>
+    <li>Groq API Key</li>
+  </ul>
+</section>
 
-1. Clone repository:sh
-git clone <repository-url>
-cd AIVAST2. Create virtual environment:ash
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# atau
-venv\Scripts\activate  # Windows3. Install dependencies:
-pip install -r requirements.txt4. Setup environment variables:
-cp .env.example .env
-# Edit .env dan masukkan GROQ_API_KEY5. Initialize database (otomatis saat first run)
+<section>
+  <h2>🔧 Installation</h2>
 
-## 🎯 Usage
+  <h3>1. Clone Repository</h3>
+  <pre><code>git clone &lt;repository-url&gt;
+cd AIVAST</code></pre>
 
-### Run Flask App
-python src/app.pyServer akan berjalan di `http://127.0.0.1:5000`
+  <h3>2. Create Virtual Environment</h3>
+  <pre><code>python3 -m venv venv
+source venv/bin/activate   # Linux / Mac
+venv\Scripts\activate      # Windows</code></pre>
 
-### Test dengan Python Script
-python test.py
-### Test dengan cURL
+  <h3>3. Install Dependencies</h3>
+  <pre><code>pip install -r requirements.txt</code></pre>
 
-#### Health Check
-curl http://127.0.0.1:5000/#### Run Scan
-curl -X POST http://127.0.0.1:5000/scan \
+  <h3>4. Setup Environment Variables</h3>
+  <pre><code>cp .env.example .env</code></pre>
+
+  <p>Edit file <code>.env</code>:</p>
+  <pre><code>FLASK_ENV=development
+DATABASE_URL=sqlite:///AIVAST.db
+GROQ_API_KEY=your-groq-api-key</code></pre>
+</section>
+
+<section>
+  <h2>🎯 Usage</h2>
+
+  <h3>Run Flask App</h3>
+  <pre><code>python src/app.py</code></pre>
+  <p>Server berjalan di <code>http://127.0.0.1:5000</code></p>
+
+  <h3>Test dengan cURL</h3>
+
+  <h4>Health Check</h4>
+  <pre><code>curl http://127.0.0.1:5000/</code></pre>
+
+  <h4>Run Scan</h4>
+  <pre><code>curl -X POST http://127.0.0.1:5000/scan \
   -H "Content-Type: application/json" \
-  -d '{"target": "https://example.com"}'#### List All Scans
-curl http://127.0.0.1:5000/scans#### Filter Scans
-# By tool
+  -d '{"target": "https://example.com"}'</code></pre>
+
+  <h4>List All Scans</h4>
+  <pre><code>curl http://127.0.0.1:5000/scans</code></pre>
+
+  <h4>Filter Scans</h4>
+  <pre><code># By tool
 curl http://127.0.0.1:5000/scans?tool=nikto
 
 # By risk level
 curl http://127.0.0.1:5000/scans?risk=medium
 
 # Pagination
-curl http://127.0.0.1:5000/scans?page=1&per_page=10
-#### Get Scan Detail
-curl http://127.0.0.1:5000/scans/1#### Delete Scan
-curl -X DELETE http://127.0.0.1:5000/scans/1## 📡 API Endpoints
+curl http://127.0.0.1:5000/scans?page=1&per_page=10</code></pre>
+</section>
 
-### `GET /`
-Health check endpoint.
+<section>
+  <h2>📝 API Endpoints</h2>
 
-**Response:**
-{
-  "status": "AIVAST running"
-}### `POST /scan`
-Run security scan pada target.
+  <h3>GET /</h3>
+  <p>Health check endpoint.</p>
 
-**Request:**son
-{
-  "target": "https://example.com"
-}**Response:**
-{
-  "target": "https://example.com",
-  "tool": "nikto",
-  "command": "nikto -h https://example.com",
-  "execution": {
-    "ok": true,
-    "tool": "nikto",
-    "returncode": 1,
-    "stdout": "...",
-    "stderr": "..."
-  },
-  "analysis": {
-    "risk": "medium",
-    "summary": "...",
-    "issues": [...],
-    "recommendations": [...]
-  }
-}### `GET /scans`
-List semua scan history dengan pagination dan filtering.
+  <h3>POST /scan</h3>
+  <p>Menjalankan scanning keamanan pada target.</p>
 
-**Query Parameters:**
-- `page` (int): Page number (default: 1)
-- `per_page` (int): Items per page (default: 20)
-- `tool` (string): Filter by tool (nmap/nikto)
-- `risk` (string): Filter by risk level (info/low/medium/high)
+  <h3>GET /scans</h3>
+  <p>Menampilkan semua scan dengan pagination & filtering.</p>
 
-**Response:**
-{
-  "scans": [...],
-  "total": 10,
-  "page": 1,
-  "per_page": 20,
-  "pages": 1
-}### `GET /scans/<id>`
-Get detail scan tertentu.
+  <h3>GET /scans/&lt;id&gt;</h3>
+  <p>Detail scan tertentu.</p>
 
-### `DELETE /scans/<id>`
-Delete scan tertentu.
+  <h3>DELETE /scans/&lt;id&gt;</h3>
+  <p>Menghapus scan.</p>
+</section>
 
-## 🏗️ Project Structure
-<h5>
-  Create virtual environment
-</h5>
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# atau
-venv\Scripts\activate  # Windows Arguments**: Block arguments berbahaya (--script, -oA, dll)
-- **Timeout Protection**: nmap (180s), nikto (300s)
-- **Output Limit**: Maksimal 20000 karakter per output
+<section>
+  <h2>🤝 Contributing</h2>
+  <p>Contributions are welcome. Silakan submit Pull Request.</p>
+</section>
 
-## 🛠️ Development
+<section>
+  <h2>📄 License</h2>
+  <p>[Your License Here]</p>
+</section>
 
-### Running in Development Mode
-python src/app.py### Production Deployment
-Gunakan gunicorn:
-gunicorn -w 4 -b 0.0.0.0:8000 "src.app:create_app()"## 📝 Environment Variables
-
-SECRET_KEY=your-secret-key
-GROQ_API_KEY=your-groq-api-key
-DATABASE_URL=sqlite:///AIVAST.db
-FLASK_ENV=development
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-[Your License Here]
-
-## 🙏 Acknowledgments
-
-- Groq for LLM API
-- nmap and nikto projects
-- Flask community
-
-  pip install -r requirements.txtpathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
-    """Setup logger dengan file dan console handler."""
-    
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    
-    # File handler
-    file_handler = logging.FileHandler(LOG_DIR / log_file)
-    file_handler.setLevel(level)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    
-    # Formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-
-  <h5>
-Install dependencies:
-    
-  </h5>
-  pip install -r requirements.txtpathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
-    """Setup logger dengan file dan console handler."""
-    
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    
-    # File handler
-    file_handler = logging.FileHandler(LOG_DIR / log_file)
-    file_handler.setLevel(level)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    
-    # Formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-  <h5>
-    Setup environment variables
-  </h5>
-
-  cp .env.example .env
-# Edit .env dan masukkan GROQ_API_KEYproduction
-FLASK_ENV=development
-
-# Database
-DATABASE_URL=sqlite:///AIVAST.db
-
-# Groq API
-GROQ_API_KEY=your-groq-api-key-here
-
-<h3>
-  Usage
-</h3>
-<h5>
-  Run Flask App
-</h5>
-python src/app.pycurl -X POST http://127.0.0.1:5000/scan \
-  -H "Content-Type: application/json" \
-  -d '{"target": "scanme.nmap.org"}'
-
-Server akan berjalan di http://127.0.0.1:5000
-
-
-Test dengan cURL
-Health Check
-curl http://127.0.0.1:5000/
-Run Scan
-curl -X POST http://127.0.0.1:5000/scan \  -H "Content-Type: application/json" \  -d '{"target": "https://example.com"}'
-List All Scans
-curl http://127.0.0.1:5000/scans
-Filter Scans
-# By toolcurl http://127.0.0.1:5000/scans?tool=nikto# By risk levelcurl http://127.0.0.1:5000/scans?risk=medium# Paginationcurl http://127.0.0.1:5000/scans?page=1&per_page=10
-Get Scan Detail
-curl http://127.0.0.1:5000/scans/1
-Delete Scan
-
+</main>
 
 </body>
+</html>
