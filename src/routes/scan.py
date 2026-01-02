@@ -7,7 +7,7 @@ import json
 
 scan_bp = Blueprint("scan", __name__)
 
-@scan_bp.route("/scan", methods=["POST"])
+@scan_bp.route("/scans", methods=["POST"])
 def scan():
     try:
         data = request.get_json(silent=True)

@@ -17,14 +17,14 @@ def plan_scan_rule_based(target: str) -> Dict[str, str]:
     if target.startswith("http://") or target.startswith("https://"):
         return {
             "tool": "nikto",
-            "command": f"nikto -h {target}",
-            "reason": "Web vulnerability scan (rule-based)"
+            "command": f"nikto -h {target} -Format xml",
+            "reason": "Web vulnerability scan (rule-based, xml output)"
         }
 
     return {
         "tool": "nmap",
-        "command": f"nmap -sV -T4 {target}",
-        "reason": "Network service scan (rule-based)"
+        "command": f"nmap -sV -T4 -oX - {target}",
+        "reason": "Network service scan (rule-based, xml stdout)"
     }
 
 

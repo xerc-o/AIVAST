@@ -1,0 +1,6 @@
+README.md
+setup.py
+aivast.egg-info/PKG-INFO
+aivast.egg-info/SOURCES.txt
+aivast.egg-info/dependency_links.txt
+aivast.egg-info/top_level.txt
