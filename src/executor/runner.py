@@ -1,6 +1,7 @@
 import shlex
 import shutil
 import subprocess
+import signal
 from typing import Dict
 
 ALLOWED_TOOLS = {"nmap", "nikto"}
@@ -10,9 +11,40 @@ TIMEOUTS = {
     "nikto": 300
 }
 MAX_OUTPUT = 20000
+DEFAULT_TIMEOUT = 120
 
 
-def run_command(command: str) -> Dict:
+def _add_structured_output_args(args: list, tool: str) -> list:
+    """
+    Tambahkan argument untuk output terstruktur ke command.
+    Output akan ke stdout, bukan file (aman).
+    """
+    if tool == "nmap":
+        # nmap: gunakan -oJ untuk JSON output ke stdout
+        # Note: -oJ output ke file, jadi kita gunakan kombinasi
+        # Kita akan parse dari stdout biasa, atau gunakan -o- untuk XML ke stdout
+        # Tapi untuk keamanan, kita tetap gunakan stdout biasa dan parse dengan parser
+        # Alternatif: gunakan nmap dengan format yang lebih terstruktur
+        pass  # Akan dihandle oleh parser
+    elif tool == "nikto":
+        # nikto: gunakan -Format xml untuk XML output
+        if "-Format" not in args and "-format" not in args:
+            args.extend(["-Format", "xml"])
+    return args
+
+
+def run_command(command: str, timeout: int = None, use_structured_output: bool = True) -> Dict:
+    """
+    Execute command dengan security controls dan timeout protection.
+    
+    Args:
+        command: Command string untuk dieksekusi
+        timeout: Custom timeout dalam detik (optional)
+        use_structured_output: Jika True, tambahkan arg untuk output terstruktur
+    
+    Returns:
+        Dict dengan hasil eksekusi
+    """
     args = shlex.split(command)
     if not args:
         return {"ok": False, "error": "Empty command"}
@@ -24,30 +56,58 @@ def run_command(command: str) -> Dict:
     if tool not in ALLOWED_TOOLS or tool_path is None:
         return {"ok": False, "error": "Tool not allowed or not found"}
 
-    # Forbidden arguments
-    if any(arg.split("=", 1)[0] in FORBIDDEN_ARGS or any(arg.startswith(p) for p in FORBIDDEN_ARGS)
-           for arg in args):
-        return {"ok": False, "error": "Forbidden argument detected"}
+    # Forbidden arguments (tapi izinkan output terstruktur ke stdout)
+    # Periksa apakah ada attempt untuk write ke file
+    for arg in args:
+        arg_base = arg.split("=", 1)[0]
+        if arg_base in FORBIDDEN_ARGS:
+            # Izinkan -Format untuk nikto (output ke stdout)
+            if tool == "nikto" and arg_base in ["-Format", "-format"]:
+                continue
+            return {"ok": False, "error": "Forbidden argument detected"}
+
+    # Tambahkan structured output jika diminta
+    if use_structured_output:
+        args = _add_structured_output_args(args, tool)
+
+    # Determine timeout
+    if timeout is None:
+        timeout = TIMEOUTS.get(tool, DEFAULT_TIMEOUT)
 
     try:
-        proc = subprocess.run(
+        # Start process dengan timeout
+        proc = subprocess.Popen(
             args,
-            capture_output=True,
-            text=True,
-            timeout=TIMEOUTS.get(tool, 120),
-            check=False
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
+        
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+            returncode = proc.returncode
+            
+        except subprocess.TimeoutExpired:
+            # Kill process jika timeout
+            proc.kill()
+            proc.wait()
+            return {
+                "ok": False,
+                "error": "timeout",
+                "timeout_seconds": timeout,
+                "tool": tool
+            }
 
         return {
             "ok": True,
             "tool": tool,
-            "returncode": proc.returncode,
-            "stdout": proc.stdout[:MAX_OUTPUT],
-            "stderr": proc.stderr[:MAX_OUTPUT],
+            "returncode": returncode,
+            "stdout": stdout[:MAX_OUTPUT] if stdout else "",
+            "stderr": stderr[:MAX_OUTPUT] if stderr else "",
+            "timeout_used": timeout,
+            "structured_output": use_structured_output
         }
 
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "timeout"}
     except FileNotFoundError as fnf:
         return {"ok": False, "error": "executable not found", "details": str(fnf)}
     except Exception as e:
