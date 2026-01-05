@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
-from executor.runner import run_command  # sesuaikan path runner kamu
+from executor.runner import run_command
+from flask_login import login_required
 
 main_bp = Blueprint("main", __name__)
 
@@ -7,7 +8,13 @@ main_bp = Blueprint("main", __name__)
 def index():
     return render_template("index.html")
 
+@main_bp.route("/chat-page")
+@login_required
+def chat_page():
+    return render_template("chat.html")
+
 @main_bp.route("/chat", methods=["POST"])
+@login_required
 def chat():
     data = request.get_json()
     message = data.get("message")

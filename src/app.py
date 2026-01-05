@@ -4,8 +4,12 @@ import os
 from pathlib import Path
 from routes.main import main_bp
 from routes.scan import scan_bp
-from models import db
+from models import db, User, ScanHistory
 from routes.history import history_bp
+from routes.auth import auth_bp
+from flask_login import LoginManager
+from flask.cli import with_appcontext
+import click
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -28,11 +32,36 @@ def create_app(config_overrides=None):
     
     # Initialize database
     db.init_app(app)
+
+    # Setup Flask-Login
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'main.index' # Arahkan ke halaman login jika belum login
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
     
     # Register blueprints with API versioning
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
     app.register_blueprint(scan_bp, url_prefix="/api/v1")
     app.register_blueprint(history_bp, url_prefix="/api/v1")
+
+    # Custom CLI commands
+    @app.cli.command("create-db")
+    @with_appcontext
+    def create_db_command():
+        """Creates the database tables and a default user."""
+        db.create_all()
+        # Add default user if not exists
+        if not User.query.filter_by(email="test@example.com").first():
+            default_user = User(username="testuser", email="test@example.com")
+            default_user.set_password("password")
+            db.session.add(default_user)
+            db.session.commit()
+            click.echo("Default user 'test@example.com' with password 'password' added.")
+        click.echo("Database tables created.")
     
     return app
 

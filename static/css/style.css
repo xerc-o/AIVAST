@@ -1,0 +1,305 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #fcf8f5; /* Background Cream Muda */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden; /* Mencegah scroll horizontal */
+}
+
+/* Background Decoration (Blur) */
+.blur-glow {
+    position: fixed; /* Fixed agar tetap saat di desktop */
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    filter: blur(90px);
+    z-index: -1;
+}
+.top-left { top: -150px; left: -150px; background: rgba(255, 218, 185, 0.4); }
+.bottom-right { bottom: -150px; right: -150px; background: rgba(255, 228, 196, 0.4); }
+
+/* --- MAIN CARD CONTAINER (Desktop Mode) --- */
+.main-card {
+    width: 100%;
+    max-width: 400px; /* Default mobile width */
+    padding: 40px 30px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* DESKTOP TWEAK: Saat layar lebar (>768px) */
+@media (min-width: 768px) {
+    body {
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Sedikit gradasi biar elegan */
+    }
+    .main-card {
+        background: white;
+        max-width: 450px; /* Lebih lebar sedikit di desktop */
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); /* Efek kartu melayang */
+        padding: 50px 40px;
+    }
+}
+
+/* --- LOGO --- */
+.header-logo {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2d2d39;
+}
+.brand-name { font-size: 14px; text-align: right; line-height: 1.2; }
+.logo-icon { font-size: 22px; }
+
+/* --- SECTION LOGIC (Hide/Show) --- */
+.auth-section {
+    display: none; /* Sembunyikan default */
+    animation: fadeIn 0.5s ease;
+}
+.auth-section.active {
+    display: block; /* Tampilkan jika active */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HERO SECTION --- */
+.hero-section {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    position: relative;
+}
+.small-hero { margin-top: 20px; margin-bottom: 30px; } /* Untuk Signup/Forgot */
+
+.robot-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 240px;
+    opacity: 0.1;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.title {
+    font-size: 38px;
+    font-weight: 800;
+    color: #2d2d39;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+}
+.subtitle { font-size: 13px; color: #a0a0a0; font-weight: 500; position: relative; z-index: 2; }
+
+/* --- FORMS --- */
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+
+.input-group { position: relative; width: 100%; }
+.input-group input {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    background: transparent;
+    outline: none;
+    font-size: 15px;
+    color: #333;
+    transition: border-color 0.3s;
+}
+.input-group input:focus { border-bottom: 1.5px solid #2d2d39; }
+.input-group input::placeholder { color: #ccc; font-weight: 300; }
+
+.toggle-password {
+    position: absolute; right: 0; top: 12px;
+    color: #aaa; cursor: pointer;
+}
+
+/* Options (Remember / Forgot) */
+.options-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: #888; margin-top: -5px;
+}
+.remember-me { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.link-text { text-decoration: none; color: #888; transition: color 0.3s; }
+.link-text:hover { color: #2d2d39; }
+
+/* Button */
+.btn-primary {
+    margin-top: 10px;
+    width: 100%;
+    padding: 16px;
+    background-color: #2d2d39;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(45, 45, 57, 0.2);
+    transition: transform 0.2s, background 0.3s;
+}
+.btn-primary:hover {
+    background-color: #3e3e4f;
+    transform: translateY(-2px);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* Footer Links */
+.footer-text { margin-top: 40px; text-align: center; font-size: 13px; color: #aaa; }
+.footer-text a {
+    color: #2d2d39; text-decoration: none; font-weight: 700; margin-left: 3px;
+}
+.footer-text a:hover { text-decoration: underline; }
+/* Hilangkan fitur "eye" bawaan dari Microsoft Edge */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+/* Hilangkan fitur "eye" bawaan dari Chrome/Safari */
+input[type="password"]::-webkit-password-reveal-button {
+    display: none; 
+    -webkit-appearance: none;
+}
+
+/* --- CSS KHUSUS HALAMAN CHAT --- */
+
+body.chat-page {
+    background-color: #fcf8f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Agar tidak scroll body */
+}
+
+/* --- HEADER --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: transparent;
+    z-index: 10;
+}
+
+.menu-btn { font-size: 24px; cursor: pointer; color: #2d2d39; }
+.brand-logo { display: flex; align-items: center; gap: 5px; font-weight: 700; color: #2d2d39; }
+.logo-icon { font-size: 20px; }
+
+/* --- SIDEBAR (HISTORY) --- */
+.sidebar {
+    position: fixed;
+    top: 0; left: -280px; /* Sembunyi di kiri */
+    width: 280px;
+    height: 100%;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: left 0.3s ease;
+    z-index: 20;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.active { left: 0; } /* Munculkan sidebar */
+
+.sidebar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px; font-weight: 700; font-size: 18px;
+}
+
+.close-btn { cursor: pointer; font-size: 20px; }
+
+.history-list { list-style: none; overflow-y: auto; flex: 1; }
+.history-item {
+    padding: 12px; margin-bottom: 10px;
+    background: #f4f4f4; border-radius: 10px;
+    cursor: pointer; font-size: 14px; color: #555;
+    display: flex; align-items: center; gap: 10px;
+}
+.history-item:hover { background: #e0e0e0; }
+
+/* --- MAIN CHAT AREA --- */
+.chat-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto; /* Scroll jika chat panjang */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Tampilan Awal (Robot Besar) */
+.welcome-screen {
+    text-align: center;
+    margin-top: 50px;
+    display: flex; flex-direction: column; align-items: center;
+}
+.big-robot { width: 180px; margin-bottom: 20px; opacity: 0.9; }
+.welcome-text { font-size: 14px; color: #888; max-width: 300px; }
+
+/* Gelembung Chat (Simulasi Awan) */
+.message-wrapper {
+    width: 100%; max-width: 600px;
+    display: flex; align-items: flex-end; gap: 10px;
+    margin-bottom: 20px;
+    /* display: none; Disembunyikan dulu, muncul lewat JS nanti */
+}
+.message-wrapper.show { display: flex; }
+
+.message-wrapper.user { justify-content: flex-end; } /* User di kanan */
+.message-wrapper.bot { justify-content: flex-start; } /* Bot di kiri */
+
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; border: 2px solid #2d2d39; }
+.user .avatar { order: 2; } /* Icon user di paling kanan */
+
+.bubble {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 20px;
+    border: 2px solid #2d2d39;
+    font-size: 14px; color: #333;
+    max-width: 70%;
+    position: relative;
+    box-shadow: 2px 2px 0px #2d2d39; /* Efek kartun */
+}
+
+/* --- INPUT AREA --- */
+.input-area {
+    padding: 20px;
+    background: #fcf8f5; /* Sama dengan background body */
+    display: flex; justify-content: center;
+}
+
+.input-box {
+    width: 100%; max-width: 600px;
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 50px;
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.input-box input {
+    flex: 1; border: none; outline: none; font-size: 15px;
+}
+
+.icon-btn { color: #888; cursor: pointer; font-size: 18px; transition: color 0.3s; }
+.icon-btn:hover { color: #2d2d39; }

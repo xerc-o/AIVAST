@@ -1,17 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIVAST</title>
+    <title>Mini PBL - Auth System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Welcome to AIVAST!</h1>
-    <p>This is the main page.</p>
-    <p>You can interact with the API endpoints.</p>
-    <ul>
-        <li><a href="/history">View Scan History (if implemented)</a></li>
-        <li>For /scan, use a POST request to the API.</li>
-    </ul>
+
+    <div class="blur-glow top-left"></div>
+    <div class="blur-glow bottom-right"></div>
+
+    <div class="main-card">
+        
+        <header class="header-logo">
+            <span class="brand-name">Mini <strong>PBL</strong></span>
+            <i class="fa-solid fa-dragon logo-icon"></i>
+        </header>
+
+        <section id="loginSection" class="auth-section active">
+            <div class="hero-section">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Robot" class="robot-bg">
+                <h1 class="title">Hi! <br> Welcome</h1>
+                <p class="subtitle">I'm waiting for you, please enter your detail!</p>
+            </div>
+
+            <form class="auth-form" action="{{ url_for('auth.login') }}" method="POST">
+                <div class="input-group">
+                    <input type="email" id="LoginInput" name="email" placeholder="Email Address" required>
+                </div>
+
+                <div class="input-group password-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                    <i class="fa-regular fa-eye toggle-password"></i>
+                </div>
+                
+                <div class="options-row">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember"> Remember Me
+                    </label>
+                    <a href="#" onclick="switchView('forgot')" class="link-text">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-primary">Log In</button>
+            </form>
+
+            <div class="footer-text">
+                <p>Don't have an account? <a href="#" onclick="switchView('signup')">Sign Up</a></p>
+            </div>
+        </section>
+
+        <section id="signupSection" class="auth-section">
+            <div class="hero-section small-hero">
+                <h1 class="title">Create Account</h1>
+                <p class="subtitle">Join us and start your journey!</p>
+            </div>
+
+            <form class="auth-form" action="{{ url_for('auth.signup') }}" method="POST">
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group password-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                    <i class="fa-regular fa-eye toggle-password"></i>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+
+            <div class="footer-text">
+                <p>Already have an account? <a href="#" onclick="switchView('login')">Log In</a></p>
+            </div>
+        </section>
+
+        <section id="forgotSection" class="auth-section">
+            <div class="hero-section small-hero">
+                <h1 class="title">Forgot Password?</h1>
+                <p class="subtitle">Enter your email to receive reset instructions</p>
+            </div>
+
+            <form class="auth-form" onsubmit="event.preventDefault(); alert('Link Reset Dikirim!');">
+                <div class="input-group">
+                    <input type="email" placeholder="Enter your email" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Send Reset Link</button>
+            </form>
+
+            <div class="footer-text">
+                <p>Back to <a href="#" onclick="switchView('login')">Log In</a></p>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
 </body>
+
 </html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat AI - Mini PBL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="chat-page">
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span>Chat History</span>
+            <i class="fa-solid fa-xmark close-btn" onclick="toggleSidebar()"></i>
+        </div>
+        <ul class="history-list">
+            <li class="history-item"><i class="fa-regular fa-message"></i> Belajar HTML Dasar</li>
+            <li class="history-item"><i class="fa-regular fa-message"></i> Apa itu Cyber Security?</li>
+            <li class="history-item"><i class="fa-regular fa-message"></i> Cara install Linux</li>
+        </ul>
+        <button onclick="logout()" style="width:100%; padding:12px; background:#2d2d39; color:white; border:none; border-radius:10px; cursor:pointer;">Logout</button>
+    </div>
+
+    <header>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleSidebar()"></i>
+        <div class="brand-logo">
+            Mini <strong>PBL</strong> <i class="fa-solid fa-dragon logo-icon"></i>
+        </div>
+    </header>
+
+    <div class="chat-container" id="chatContainer">
+        
+        <div class="welcome-screen" id="welcomeScreen">
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="big-robot" alt="Robot AI">
+            <p class="welcome-text">Hi! I'm your AI Assistant. How can I help you today?</p>
+        </div>
+
+        <div class="message-wrapper user" id="dummyUserMsg">
+            <div class="bubble">Halo, apa itu Digital Forensics?</div>
+            <div class="avatar"><i class="fa-regular fa-user"></i></div>
+        </div>
+
+        <div class="message-wrapper bot" id="dummyBotMsg">
+            <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+            <div class="bubble">Digital Forensics adalah cabang ilmu forensik yang berfokus pada pemulihan dan penyelidikan materi yang ditemukan dalam perangkat digital.</div>
+        </div>
+
+    </div>
+
+    <div class="input-area">
+        <div class="input-box">
+            <i class="fa-solid fa-magnifying-glass icon-btn"></i>
+            <input type="text" id="msgInput" placeholder="Ask me anything..." onkeypress="handleEnter(event)">
+            <i class="fa-solid fa-microphone icon-btn"></i>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
