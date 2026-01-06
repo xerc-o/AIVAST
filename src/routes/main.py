@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template
-from executor.runner import run_command
+from executor.runner import run_command_async
 from flask_login import login_required
 
 main_bp = Blueprint("main", __name__)
@@ -23,7 +23,7 @@ def chat():
         return jsonify({"error": "message is required"}), 400
 
     try:
-        response = run_command(message)
+        response = run_command_async(message)
         return jsonify({
             "input": message,
             "output": response

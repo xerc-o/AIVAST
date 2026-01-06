@@ -53,7 +53,7 @@ Available tools:
 Rules:
 - If target starts with http:// or https://, use nikto
 - If target is IP address or hostname (without http/https), use nmap
-- For nmap, use: "nmap -sV -T4 [target]"
+- For nmap, use: "nmap -sV -T4 -oX - [target]"
 - For nikto, use: "nikto -h [target]"
 
 Target: {target}"""

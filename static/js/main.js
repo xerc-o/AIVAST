@@ -40,12 +40,12 @@ function displayMessage(message, type) {
     const avatar = document.createElement('div');
     avatar.classList.add('avatar');
     const icon = document.createElement('i');
-    icon.classList.add('fa-regular', type === 'user' ? 'fa-user' : 'fa-solid fa-robot');
+    icon.classList.add(type === 'user' ? 'fa-regular' : 'fa-solid', type === 'user' ? 'fa-user' : 'fa-robot');
     avatar.appendChild(icon);
 
     const bubble = document.createElement('div');
     bubble.classList.add('bubble');
-    bubble.textContent = message;
+    bubble.innerHTML = message; // Use innerHTML to allow for formatted messages
 
     messageWrapper.appendChild(avatar);
     messageWrapper.appendChild(bubble);
@@ -53,6 +53,40 @@ function displayMessage(message, type) {
 
     // Scroll to bottom
     chatContainer.scrollTop = chatContainer.scrollHeight;
+    return bubble; // Return the bubble element for later updates
+}
+
+// Fungsi untuk polling status scan dari backend
+async function pollScanStatus(scanId, botMessageBubble) {
+    const pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/v1/scans/${scanId}/status`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.status === 'completed') {
+                clearInterval(pollInterval);
+                const summary = data.analysis?.summary || "Analisis selesai. Tidak ada ringkasan yang tersedia.";
+                botMessageBubble.innerHTML = summary; // Update existing bubble
+                fetchHistory(); // Refresh history once completed
+            } else if (data.status === 'failed') {
+                clearInterval(pollInterval);
+                const error = data.error || "Scan gagal karena kesalahan server.";
+                botMessageBubble.innerHTML = `Scan gagal: ${error}`; // Update existing bubble
+                fetchHistory();
+            } else {
+                // Still running, update loading animation if desired
+                botMessageBubble.innerHTML = "Scanning... <i class='fa-solid fa-spinner fa-spin'></i>";
+            }
+        } catch (error) {
+            clearInterval(pollInterval);
+            console.error("Error polling scan status:", error);
+            botMessageBubble.innerHTML = "Maaf, terjadi kesalahan saat memeriksa status scan.";
+            fetchHistory();
+        }
+    }, 3000); // Poll every 3 seconds
 }
 
 // Fungsi untuk mengirim pesan ke backend saat menekan Enter
@@ -64,6 +98,8 @@ async function handleEnter(e) {
         if (message !== "") {
             displayMessage(message, 'user');
             input.value = '';
+
+            const botMessageBubble = displayMessage("Memulai scan... <i class='fa-solid fa-spinner fa-spin'></i>", 'bot'); // Display initial scanning message
 
             try {
                 const response = await fetch('/api/v1/scans', {
@@ -77,15 +113,15 @@ async function handleEnter(e) {
                 }
 
                 const data = await response.json();
-                const summary = data.analysis?.summary || "Tidak ada ringkasan yang tersedia.";
-                displayMessage(summary, 'bot');
-                
-                // Refresh history
-                fetchHistory();
+                if (data.scan_id) {
+                    pollScanStatus(data.scan_id, botMessageBubble); // Start polling
+                } else {
+                    botMessageBubble.innerHTML = "Gagal memulai scan: ID scan tidak ditemukan.";
+                }
 
             } catch (error) {
-                console.error("Error sending message:", error);
-                displayMessage("Maaf, terjadi kesalahan saat menghubungi server.", 'bot');
+                console.error("Error starting scan:", error);
+                botMessageBubble.innerHTML = "Maaf, terjadi kesalahan saat memulai scan.";
             }
         }
     }
@@ -103,17 +139,25 @@ async function fetchHistory() {
         const historyList = document.querySelector('.history-list');
         historyList.innerHTML = ''; // Kosongkan list
 
-        data.scans.forEach(scan => {
+        if (data.scans && data.scans.length > 0) {
+            data.scans.forEach(scan => {
+                const item = document.createElement('li');
+                item.className = 'history-item';
+                
+                const icon = document.createElement('i');
+                icon.className = 'fa-regular fa-message';
+                
+                item.appendChild(icon);
+                item.append(` ${scan.target} (${scan.status})`); // Tambahkan target dan status
+                historyList.appendChild(item);
+            });
+        } else {
             const item = document.createElement('li');
             item.className = 'history-item';
-            
-            const icon = document.createElement('i');
-            icon.className = 'fa-regular fa-message';
-            
-            item.appendChild(icon);
-            item.append(` ${scan.target}`); // Tambahkan target ke item
+            item.textContent = "Tidak ada riwayat scan.";
             historyList.appendChild(item);
-        });
+        }
+
 
     } catch (error) {
         console.error("Error fetching history:", error);
@@ -133,8 +177,20 @@ function logout() {
 
 // Event listener untuk dieksekusi setelah DOM dimuat
 document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('msgInput');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', handleEnter);
+    }
+
     // Hanya jalankan fetchHistory jika kita berada di halaman chat
     if (document.querySelector('.chat-container')) {
         fetchHistory();
+        
+        // Hapus dummy messages
+        const dummyUserMsg = document.getElementById('dummyUserMsg');
+        if(dummyUserMsg) dummyUserMsg.remove();
+        
+        const dummyBotMsg = document.getElementById('dummyBotMsg');
+        if(dummyBotMsg) dummyBotMsg.remove();
     }
 });

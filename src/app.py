@@ -16,13 +16,22 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def create_app(config_overrides=None):
-    app = Flask(__name__, template_folder=BASE_DIR / 'templates')
+    app = Flask(__name__,
+                template_folder=BASE_DIR / 'templates',
+                static_folder=BASE_DIR / 'static',
+                instance_path=BASE_DIR / 'instance')
+    
+    # Ensure the instance folder exists
+    try:
+        os.makedirs(app.instance_path)
+    except OSError:
+        pass
     
     # Configuration from environment variables
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-key")
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
         "DATABASE_URL",
-        f"sqlite:///{BASE_DIR / 'AIVAST.db'}"
+        f"sqlite:///{os.path.join(app.instance_path, 'AIVAST.db')}"
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

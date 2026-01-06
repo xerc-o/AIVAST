@@ -29,10 +29,20 @@ class ScanHistory(db.Model):
     target = db.Column(db.String(500), nullable=False, index=True)
     tool = db.Column(db.String(50), nullable=False)
     command = db.Column(db.Text, nullable=False)
+    
+    # Fields for async task tracking
+    status = db.Column(db.String(20), nullable=False, default='pending', index=True)
+    pid = db.Column(db.Integer, nullable=True)
+    stdout_path = db.Column(db.String(500), nullable=True)
+    stderr_path = db.Column(db.String(500), nullable=True)
+
+    # Fields for results
     execution_result = db.Column(db.Text)  # JSON string
     analysis_result = db.Column(db.Text)   # JSON string
     risk_level = db.Column(db.String(20), index=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    start_time = db.Column(db.DateTime, nullable=True) # New column
     
     def to_dict(self):
         """Convert model ke dictionary."""
@@ -41,6 +51,7 @@ class ScanHistory(db.Model):
             "target": self.target,
             "tool": self.tool,
             "command": self.command,
+            "status": self.status,
             "risk_level": self.risk_level,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "execution": json.loads(self.execution_result) if self.execution_result else None,
