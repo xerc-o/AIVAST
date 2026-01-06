@@ -10,6 +10,11 @@ from routes.auth import auth_bp
 from flask_login import LoginManager
 from flask.cli import with_appcontext
 import click
+import logging # Import logging module
+
+# Configure logging at the beginning
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
