@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
+from flask_login import login_required, current_user
 from ai.planner import plan_scan
 from ai.analyzer import analyze_output
 from executor.runner import run_command_async
 from models import db, ScanHistory
-import json
 import json
 import psutil
 import os
@@ -26,6 +26,7 @@ def _cleanup_temp_files(scan: ScanHistory):
 scan_bp = Blueprint("scan", __name__)
 
 @scan_bp.route("/scans", methods=["POST"])
+@login_required
 def start_scan():
     """
     Starts a new scan asynchronously.
@@ -47,9 +48,10 @@ def start_scan():
     new_scan = ScanHistory(
         target=target,
         tool=plan.get("tool"),
-        command=plan.get("command"),
+        command=json.dumps(plan.get("command")),  # Serialize command list to JSON string
         status='running',
-        start_time=datetime.utcnow() # Record start time
+        start_time=datetime.utcnow(), # Record start time
+        user_id=current_user.id # Associate with current user
     )
     db.session.add(new_scan)
     db.session.commit()
@@ -83,11 +85,16 @@ def start_scan():
 
 
 @scan_bp.route("/scans/<int:scan_id>/status", methods=["GET"])
+@login_required
 def get_scan_status(scan_id):
     """
     Polls the status of a running scan. If completed, returns the result.
     """
     scan = ScanHistory.query.get_or_404(scan_id)
+
+    # Ownership check
+    if scan.user_id != current_user.id:
+        return jsonify({"error": "forbidden"}), 403
 
     if scan.status != 'running':
         return jsonify({"status": scan.status, "analysis": json.loads(scan.analysis_result or '{}')})

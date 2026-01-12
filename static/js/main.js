@@ -23,6 +23,31 @@ document.querySelectorAll('.toggle-password').forEach(icon => {
     });
 });
 
+// --- THEME SWITCHER ---
+const themeToggle = document.getElementById('theme-toggle');
+const body = document.body;
+
+function setTheme(theme) {
+    if (theme === 'dark') {
+        body.classList.add('dark-mode');
+        themeToggle.textContent = 'Light Mode';
+    } else {
+        body.classList.remove('dark-mode');
+        themeToggle.textContent = 'Dark Mode';
+    }
+}
+
+themeToggle.addEventListener('click', () => {
+    const isDarkMode = body.classList.contains('dark-mode');
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+});
+
+// Set theme on page load
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
+
 
 // --- FUNGSI HALAMAN CHAT ---
 
@@ -143,12 +168,17 @@ async function fetchHistory() {
             data.scans.forEach(scan => {
                 const item = document.createElement('li');
                 item.className = 'history-item';
+                item.dataset.scanId = scan.id; // Store scan ID
                 
                 const icon = document.createElement('i');
                 icon.className = 'fa-regular fa-message';
                 
                 item.appendChild(icon);
                 item.append(` ${scan.target} (${scan.status})`); // Tambahkan target dan status
+                
+                // Add click event listener
+                item.addEventListener('click', () => loadHistoryScan(scan.id, scan.target));
+
                 historyList.appendChild(item);
             });
         } else {
@@ -163,6 +193,30 @@ async function fetchHistory() {
         console.error("Error fetching history:", error);
     }
 }
+
+// Fungsi untuk memuat dan menampilkan scan dari history
+async function loadHistoryScan(scanId, target) {
+    const chatContainer = document.getElementById('chatContainer');
+    chatContainer.innerHTML = ''; // Clear the chat window
+
+    displayMessage(target, 'user');
+    const botMessageBubble = displayMessage("Loading history... <i class='fa-solid fa-spinner fa-spin'></i>", 'bot');
+
+    try {
+        const response = await fetch(`/api/v1/scans/${scanId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        const summary = data.analysis?.summary || "Analisis selesai. Tidak ada ringkasan yang tersedia.";
+        botMessageBubble.innerHTML = summary;
+    } catch(error) {
+        console.error("Error loading history scan:", error);
+        botMessageBubble.innerHTML = "Gagal memuat riwayat scan.";
+    }
+}
+
 
 // Fungsi untuk toggle sidebar
 function toggleSidebar() {

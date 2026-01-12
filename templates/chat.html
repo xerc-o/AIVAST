@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 </head>
 <body class="chat-page">
+
+
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -29,6 +32,9 @@
         <div class="brand-logo">
             Mini <strong>PBL</strong> <i class="fa-solid fa-dragon logo-icon"></i>
         </div>
+        <button id="theme-toggle" class="theme-toggle-btn">
+            <i class="fas fa-moon"></i>
+        </button>
     </header>
 
     <div class="chat-container" id="chatContainer">
@@ -49,5 +55,45 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('i');
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                body.classList.remove('dark-mode');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                setTheme('light');
+            } else {
+                setTheme('dark');
+            }
+        });
+
+        // Set theme on page load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else {
+            // Default to light mode if no theme is saved
+            setTheme('light');
+        }
+
+        function logout() {
+            window.location.href = "{{ url_for('auth.logout') }}";
+        }
+    </script>
 </body>
 </html>

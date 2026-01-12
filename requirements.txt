@@ -1,5 +1,4 @@
 flask==2.3.3
-groq
 Flask-Login==0.6.3
 Flask-SQLAlchemy==3.1.1
 python-dotenv==1.0.1
@@ -8,3 +7,7 @@ SQLAlchemy>=2.0.36
 alembic==1.13.1
 gunicorn==21.2.0
 groq
+pytest
+Werkzeug
+python-libnmap
+beautifulsoup4

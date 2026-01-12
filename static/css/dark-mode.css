@@ -1,0 +1,25 @@
+body.dark-mode {
+    --bg-color: #1a1a2e; /* Dark blue-purple background */
+    --card-bg-color: #16213e; /* Slightly darker card background */
+    --text-color: #e0e0e0; /* Light grey text */
+    --subtitle-color: #b0b0b0; /* Lighter grey subtitle */
+    --border-color: #3e2060; /* Darker border for contrast */
+    --primary-color: #0f3460; /* Dark blue primary color */
+    --primary-text-color: #ffffff; /* White text on primary */
+    --link-color: #a7e0ff; /* Light blue link color */
+    --link-hover-color: #7da4cb; /* Slightly darker blue on hover */
+    --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4); /* Pronounced shadow */
+    --blur-bg-1: rgba(30, 60, 90, 0.4); /* Darker blue glow */
+    --blur-bg-2: rgba(50, 80, 110, 0.4); /* Even darker blue glow */
+    --gradient-bg: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); /* Dark gradient */
+    --bubble-bg: #222e50;
+    --bubble-border: #0f3460;
+    --input-box-bg: #16213e;
+    --input-box-border: #3e2060;
+    --icon-btn-color: #b0b0b0;
+
+    /* Chat specific */
+    --sidebar-bg: #16213e;
+    --history-item-bg: #222e50;
+    --history-item-hover-bg: #0f3460;
+}

@@ -36,7 +36,7 @@ def create_app(config_overrides=None):
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-key")
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
         "DATABASE_URL",
-        f"sqlite:///{os.path.join(app.instance_path, 'AIVAST.db')}"
+        f"sqlite:///{os.path.join(app.instance_path, 'AIVAST.db')}?timeout={os.getenv('DATABASE_TIMEOUT', 15)}"
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -64,17 +64,17 @@ def create_app(config_overrides=None):
 
     # Custom CLI commands
     @app.cli.command("create-db")
-    @with_appcontext
     def create_db_command():
         """Creates the database tables and a default user."""
         db.create_all()
         # Add default user if not exists
         if not User.query.filter_by(email="test@example.com").first():
+            password = click.prompt("Enter password for default user", hide_input=True, confirmation_prompt=True)
             default_user = User(username="testuser", email="test@example.com")
-            default_user.set_password("password")
+            default_user.set_password(password)
             db.session.add(default_user)
             db.session.commit()
-            click.echo("Default user 'test@example.com' with password 'password' added.")
+            click.echo("Default user 'test@example.com' added.")
         click.echo("Database tables created.")
     
     return app

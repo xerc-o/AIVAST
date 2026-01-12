@@ -1,3 +1,53 @@
+:root {
+    --bg-color: #f0f2f5; /* Light grey background */
+    --card-bg-color: #ffffff; /* White card background */
+    --text-color: #333333; /* Dark grey text */
+    --subtitle-color: #666666; /* Medium grey subtitle */
+    --border-color: #e0e0e0; /* Light grey border */
+    --primary-color: #4a90e2; /* Blue primary color */
+    --primary-text-color: #ffffff; /* White text on primary */
+    --link-color: #4a90e2; /* Blue link color */
+    --link-hover-color: #3a7bd5; /* Darker blue on hover */
+    --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); /* Soft shadow */
+    --blur-bg-1: rgba(144, 202, 249, 0.4); /* Light blue glow */
+    --blur-bg-2: rgba(187, 222, 251, 0.4); /* Lighter blue glow */
+    --gradient-bg: linear-gradient(135deg, #e0e0e0 0%, #f0f2f5 100%); /* Subtle gradient */
+    --bubble-bg: #ffffff;
+    --bubble-border: #e0e0e0;
+    --input-box-bg: #ffffff;
+    --input-box-border: #e0e0e0;
+    --icon-btn-color: #666666;
+    --primary-color-rgb: 74, 144, 226; /* RGB for --primary-color */
+
+    /* Chat specific */
+    --sidebar-bg: #ffffff;
+    --history-item-bg: #f5f5f5;
+    --history-item-hover-bg: #eeeeee;
+}
+
+/* Base styles for theme toggle button */
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: var(--text-color);
+    transition: color 0.3s ease, background-color 0.3s ease;
+    padding: 8px;
+    border-radius: 50%; /* Make it round */
+    display: flex; /* For perfect icon centering */
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Fix for icon vertical alignment */
+}
+.theme-toggle-btn:hover {
+    color: var(--primary-color); /* Highlight on hover */
+    background-color: rgba(var(--primary-color-rgb), 0.1); /* Subtle background glow */
+}
+.theme-toggle-btn i {
+    pointer-events: none; /* Prevent icon from interfering with click */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,69 +56,114 @@
 }
 
 body {
-    background-color: #fcf8f5; /* Background Cream Muda */
+    background-color: var(--bg-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow-x: hidden; /* Mencegah scroll horizontal */
+    overflow-x: hidden;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 16px; /* Base font size */
 }
 
-/* Background Decoration (Blur) */
 .blur-glow {
-    position: fixed; /* Fixed agar tetap saat di desktop */
-    width: 400px;
-    height: 400px;
+    position: fixed;
+    width: 300px; /* Slightly smaller */
+    height: 300px; /* Slightly smaller */
     border-radius: 50%;
-    filter: blur(90px);
+    filter: blur(80px); /* Slightly less blur */
+    opacity: 0.7; /* Make them a bit more subtle */
     z-index: -1;
+    transition: background 0.3s;
 }
-.top-left { top: -150px; left: -150px; background: rgba(255, 218, 185, 0.4); }
-.bottom-right { bottom: -150px; right: -150px; background: rgba(255, 228, 196, 0.4); }
+.top-left { top: -100px; left: -100px; background: var(--blur-bg-1); }
+.bottom-right { bottom: -100px; right: -100px; background: var(--blur-bg-2); }
 
-/* --- MAIN CARD CONTAINER (Desktop Mode) --- */
 .main-card {
     width: 100%;
-    max-width: 400px; /* Default mobile width */
+    max-width: 400px;
     padding: 40px 30px;
     position: relative;
     transition: all 0.3s ease;
+    border-radius: 16px; /* Softer corners */
+    box-shadow: var(--box-shadow); /* Apply shadow always */
+    background: var(--card-bg-color); /* Apply card background always */
 }
 
-/* DESKTOP TWEAK: Saat layar lebar (>768px) */
 @media (min-width: 768px) {
     body {
-        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Sedikit gradasi biar elegan */
+        background: var(--gradient-bg);
     }
     .main-card {
-        background: white;
-        max-width: 450px; /* Lebih lebar sedikit di desktop */
+        max-width: 450px;
         border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); /* Efek kartu melayang */
+        box-shadow: var(--box-shadow);
         padding: 50px 40px;
     }
 }
 
-/* --- LOGO --- */
 .header-logo {
-    position: absolute;
-    top: 25px;
-    right: 25px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #2d2d39;
+    justify-content: center; /* Center horizontally for smaller screens */
+    gap: 10px;
+    color: var(--text-color);
+    padding: 15px 0; /* Add some vertical padding */
+    width: 100%; /* Take full width */
+    position: relative; /* Remove absolute positioning by default */
+    z-index: 10;
 }
-.brand-name { font-size: 14px; text-align: right; line-height: 1.2; }
-.logo-icon { font-size: 22px; }
+.brand-name {
+    font-size: 1.1em; /* Slightly larger for better readability on small screens */
+    font-weight: 700;
+}
+.logo-icon {
+    font-size: 1.5em; /* Slightly larger for presence */
+    color: var(--primary-color);
+}
+.theme-toggle-btn {
+    position: absolute; /* Position toggle button absolutely within the header-logo */
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
 
-/* --- SECTION LOGIC (Hide/Show) --- */
+@media (min-width: 768px) {
+    body {
+        background: var(--gradient-bg);
+    }
+    .main-card {
+        background: var(--card-bg-color);
+        max-width: 450px;
+        border-radius: 24px;
+        box-shadow: var(--box-shadow);
+        padding: 50px 40px;
+    }
+    .header-logo {
+        position: absolute; /* Re-apply absolute positioning for larger screens */
+        top: 20px;
+        right: 20px;
+        justify-content: flex-end; /* Align right on larger screens */
+        width: auto;
+        padding: 0;
+    }
+    .theme-toggle-btn {
+        position: static; /* Reset position for toggle button on larger screens */
+        transform: none;
+    }
+    .header-logo .brand-name {
+        font-size: 0.9em; /* Smaller for subtlety on larger screens */
+        text-align: right;
+    }
+}
+
 .auth-section {
-    display: none; /* Sembunyikan default */
+    display: none;
     animation: fadeIn 0.5s ease;
 }
 .auth-section.active {
-    display: block; /* Tampilkan jika active */
+    display: block;
 }
 
 @keyframes fadeIn {
@@ -76,230 +171,347 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- HERO SECTION --- */
 .hero-section {
     text-align: center;
-    margin-top: 40px;
-    margin-bottom: 30px;
+    margin-top: 20px; /* Reduced margin */
+    margin-bottom: 25px; /* Slightly reduced margin */
     position: relative;
+    overflow: hidden; /* Ensure robot-bg stays within bounds */
+    padding: 20px 0;
 }
-.small-hero { margin-top: 20px; margin-bottom: 30px; } /* Untuk Signup/Forgot */
+.small-hero { margin-top: 15px; margin-bottom: 20px; padding: 10px 0; }
 
 .robot-bg {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 240px;
-    opacity: 0.1;
+    width: 200px; /* Smaller robot */
+    opacity: 0.08; /* More subtle */
     z-index: 0;
     pointer-events: none;
 }
 
 .title {
-    font-size: 38px;
+    font-size: 2.2em; /* Slightly smaller for balance */
     font-weight: 800;
-    color: #2d2d39;
+    color: var(--text-color);
     line-height: 1.1;
-    margin-bottom: 8px;
+    margin-bottom: 5px; /* Reduced margin */
     position: relative;
     z-index: 2;
 }
-.subtitle { font-size: 13px; color: #a0a0a0; font-weight: 500; position: relative; z-index: 2; }
+.subtitle {
+    font-size: 0.9em; /* Slightly larger for readability */
+    color: var(--subtitle-color);
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    max-width: 80%; /* Constrain width */
+    margin: 0 auto; /* Center subtitle */
+}
 
-/* --- FORMS --- */
-.auth-form { display: flex; flex-direction: column; gap: 20px; }
+.auth-form { display: flex; flex-direction: column; gap: 15px; /* Reduced gap */ }
 
 .input-group { position: relative; width: 100%; }
 .input-group input {
     width: 100%;
-    padding: 12px 0;
-    border: none;
-    border-bottom: 1px solid #ddd;
-    background: transparent;
+    padding: 12px 15px; /* Added horizontal padding */
+    border: 1px solid var(--border-color); /* Solid border */
+    border-radius: 8px; /* Rounded corners */
+    background: var(--input-box-bg); /* Use input box background variable */
     outline: none;
-    font-size: 15px;
-    color: #333;
-    transition: border-color 0.3s;
+    font-size: 1em; /* Consistent font size */
+    color: var(--text-color);
+    transition: border-color 0.3s, box-shadow 0.3s; /* Add box-shadow transition */
 }
-.input-group input:focus { border-bottom: 1.5px solid #2d2d39; }
-.input-group input::placeholder { color: #ccc; font-weight: 300; }
+.input-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2); /* Subtle focus ring */
+}
+.input-group input::placeholder { color: var(--subtitle-color); font-weight: 400; /* Use subtitle color for placeholders */ }
 
 .toggle-password {
-    position: absolute; right: 0; top: 12px;
-    color: #aaa; cursor: pointer;
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%); /* Centered vertically */
+    color: var(--icon-btn-color); /* Use icon button color */
+    cursor: pointer;
+    font-size: 0.9em;
 }
 
-/* Options (Remember / Forgot) */
 .options-row {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 12px; color: #888; margin-top: -5px;
+    font-size: 0.85em; /* Slightly larger font size */
+    color: var(--subtitle-color); /* Use subtitle color */
+    margin-top: 5px; /* Adjust margin */
 }
-.remember-me { display: flex; align-items: center; gap: 5px; cursor: pointer; }
-.link-text { text-decoration: none; color: #888; transition: color 0.3s; }
-.link-text:hover { color: #2d2d39; }
+.remember-me { display: flex; align-items: center; gap: 8px; /* Increased gap */ cursor: pointer; }
+.remember-me input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-box-bg);
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.remember-me input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.remember-me input[type="checkbox"]:checked::after {
+    content: '\2713'; /* Checkmark character */
+    font-size: 12px;
+    color: var(--primary-text-color);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.link-text { text-decoration: none; color: var(--link-color); transition: color 0.3s; }
+.link-text:hover { color: var(--link-hover-color); text-decoration: underline; }
 
-/* Button */
 .btn-primary {
-    margin-top: 10px;
+    margin-top: 20px; /* Increased margin */
     width: 100%;
-    padding: 16px;
-    background-color: #2d2d39;
-    color: white;
+    padding: 15px; /* Slightly reduced padding */
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 10px; /* Softer border-radius */
+    font-size: 1.1em; /* Slightly larger font size */
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(45, 45, 57, 0.2);
-    transition: transform 0.2s, background 0.3s;
+    box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.3); /* Use primary color for shadow */
+    transition: transform 0.2s, background 0.3s, box-shadow 0.3s;
 }
 .btn-primary:hover {
-    background-color: #3e3e4f;
     transform: translateY(-2px);
+    background-color: var(--link-hover-color); /* Darker primary on hover */
+    box-shadow: 0 7px 20px rgba(var(--primary-color-rgb), 0.4);
 }
-.btn-primary:active { transform: translateY(0); }
+.btn-primary:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(var(--primary-color-rgb), 0.2); }
 
-/* Footer Links */
-.footer-text { margin-top: 40px; text-align: center; font-size: 13px; color: #aaa; }
+.footer-text { margin-top: 30px; /* Adjust margin */ text-align: center; font-size: 0.9em; /* Consistent font size */ color: var(--subtitle-color); }
 .footer-text a {
-    color: #2d2d39; text-decoration: none; font-weight: 700; margin-left: 3px;
+    color: var(--link-color); text-decoration: none; font-weight: 700; margin-left: 5px; /* Increased margin */
 }
-.footer-text a:hover { text-decoration: underline; }
-/* Hilangkan fitur "eye" bawaan dari Microsoft Edge */
+.footer-text a:hover { text-decoration: underline; color: var(--link-hover-color); }
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
     display: none;
 }
 
-/* Hilangkan fitur "eye" bawaan dari Chrome/Safari */
 input[type="password"]::-webkit-password-reveal-button {
-    display: none; 
+    display: none;
     -webkit-appearance: none;
 }
 
-/* --- CSS KHUSUS HALAMAN CHAT --- */
-
 body.chat-page {
-    background-color: #fcf8f5;
+    background-color: var(--bg-color);
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Agar tidak scroll body */
+    overflow: hidden;
+    font-size: 16px; /* Ensure base font size is applied */
 }
 
-/* --- HEADER --- */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 25px;
-    background: transparent;
+    padding: 15px 25px; /* Adjust padding */
+    background: var(--card-bg-color); /* Use card background for header */
+    box-shadow: var(--box-shadow); /* Add shadow to header */
     z-index: 10;
+    position: relative; /* Ensure z-index works */
 }
 
-.menu-btn { font-size: 24px; cursor: pointer; color: #2d2d39; }
-.brand-logo { display: flex; align-items: center; gap: 5px; font-weight: 700; color: #2d2d39; }
-.logo-icon { font-size: 20px; }
+.menu-btn {
+    font-size: 1.5em; /* Slightly larger */
+    cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+.menu-btn:hover {
+    color: var(--primary-color);
+}
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjust gap */
+    font-weight: 700;
+    font-size: 1.1em; /* Consistent with other branding */
+    color: var(--text-color);
+}
+.logo-icon {
+    font-size: 1.4em; /* Consistent with other branding */
+    color: var(--primary-color);
+}
+/* Re-position theme toggle button for chat header */
+header .theme-toggle-btn {
+    position: static;
+    transform: none;
+    margin-left: 15px; /* Space from logo */
+}
 
-/* --- SIDEBAR (HISTORY) --- */
 .sidebar {
     position: fixed;
-    top: 0; left: -280px; /* Sembunyi di kiri */
+    top: 0;
+    left: -280px; /* Hidden by default */
     width: 280px;
     height: 100%;
-    background: white;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    transition: left 0.3s ease;
+    background: var(--sidebar-bg); /* Use specific sidebar background variable */
+    box-shadow: 2px 0 10px rgba(0,0,0,0.15); /* Slightly stronger shadow */
+    transition: left 0.3s ease, background-color 0.3s;
     z-index: 20;
     padding: 20px;
     display: flex;
     flex-direction: column;
 }
 
-.sidebar.active { left: 0; } /* Munculkan sidebar */
+.sidebar.active { left: 0; }
 
 .sidebar-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 30px; font-weight: 700; font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px; /* Adjust margin */
+    font-weight: 700;
+    font-size: 1.2em; /* Slightly larger */
+    color: var(--text-color);
 }
 
-.close-btn { cursor: pointer; font-size: 20px; }
+.close-btn { cursor: pointer; font-size: 1.4em; color: var(--subtitle-color); }
+.close-btn:hover { color: var(--primary-color); }
 
-.history-list { list-style: none; overflow-y: auto; flex: 1; }
+.history-list { list-style: none; overflow-y: auto; flex: 1; padding-right: 5px; /* Space for scrollbar */ }
 .history-item {
-    padding: 12px; margin-bottom: 10px;
-    background: #f4f4f4; border-radius: 10px;
-    cursor: pointer; font-size: 14px; color: #555;
-    display: flex; align-items: center; gap: 10px;
+    padding: 12px 15px; /* Adjust padding */
+    margin-bottom: 8px; /* Adjust margin */
+    background: var(--history-item-bg); /* Use specific history item background variable */
+    border-radius: 10px; /* Softer border-radius */
+    cursor: pointer;
+    font-size: 0.95em; /* Slightly larger */
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s ease, color 0.2s ease;
 }
-.history-item:hover { background: #e0e0e0; }
+.history-item:hover {
+    background: var(--history-item-hover-bg); /* Use specific hover background */
+    color: var(--primary-color); /* Highlight text on hover */
+}
+.history-item i {
+    color: var(--icon-btn-color); /* Icon color */
+}
+.history-item:hover i {
+    color: var(--primary-color); /* Highlight icon on hover */
+}
 
-/* --- MAIN CHAT AREA --- */
 .chat-container {
     flex: 1;
     padding: 20px;
-    overflow-y: auto; /* Scroll jika chat panjang */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Align messages to the start */
     position: relative;
+    padding-bottom: 90px; /* Space for the input area */
 }
 
-/* Tampilan Awal (Robot Besar) */
 .welcome-screen {
     text-align: center;
     margin-top: 50px;
-    display: flex; flex-direction: column; align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Take full width to center content */
 }
-.big-robot { width: 180px; margin-bottom: 20px; opacity: 0.9; }
-.welcome-text { font-size: 14px; color: #888; max-width: 300px; }
+.big-robot { width: 150px; /* Slightly smaller */ margin-bottom: 20px; opacity: 0.8; }
+.welcome-text { font-size: 1.1em; /* Larger for readability */ color: var(--subtitle-color); max-width: 400px; line-height: 1.5; }
 
-/* Gelembung Chat (Simulasi Awan) */
 .message-wrapper {
-    width: 100%; max-width: 600px;
-    display: flex; align-items: flex-end; gap: 10px;
-    margin-bottom: 20px;
-    /* display: none; Disembunyikan dulu, muncul lewat JS nanti */
+    width: 100%; max-width: 700px; /* Wider chat bubbles */
+    display: flex;
+    align-items: flex-end;
+    gap: 12px; /* Increased gap */
+    margin-bottom: 15px; /* Reduced margin */
 }
-.message-wrapper.show { display: flex; }
+.message-wrapper.show { display: flex; } /* Ensure it's always flex */
 
-.message-wrapper.user { justify-content: flex-end; } /* User di kanan */
-.message-wrapper.bot { justify-content: flex-start; } /* Bot di kiri */
+.message-wrapper.user { justify-content: flex-end; }
+.message-wrapper.bot { justify-content: flex-start; }
 
-.avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; border: 2px solid #2d2d39; }
-.user .avatar { order: 2; } /* Icon user di paling kanan */
+.avatar {
+    width: 36px; height: 36px; /* Slightly smaller avatar */
+    min-width: 36px; /* Prevent shrinking */
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1.1em; /* Consistent font size */
+    background-color: var(--primary-color); /* Primary color background */
+    color: var(--primary-text-color); /* White text */
+    border: none; /* Remove border */
+    flex-shrink: 0; /* Prevent avatar from shrinking */
+}
+.user .avatar { order: 2; background-color: var(--link-color); } /* Different color for user avatar */
 
 .bubble {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 20px;
-    border: 2px solid #2d2d39;
-    font-size: 14px; color: #333;
+    background: var(--bubble-bg);
+    padding: 12px 18px; /* Adjusted padding */
+    border-radius: 18px; /* Softer corners */
+    border: 1px solid var(--bubble-border); /* Thinner border */
+    font-size: 0.95em; /* Consistent font size */
+    color: var(--text-color);
     max-width: 70%;
     position: relative;
-    box-shadow: 2px 2px 0px #2d2d39; /* Efek kartun */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Softer shadow */
+    line-height: 1.4;
+}
+.message-wrapper.user .bubble {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(var(--primary-color-rgb), 0.2);
 }
 
-/* --- INPUT AREA --- */
 .input-area {
-    padding: 20px;
-    background: #fcf8f5; /* Sama dengan background body */
-    display: flex; justify-content: center;
+    position: fixed; /* Fix input area at the bottom */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 20px; /* Adjusted padding */
+    background: var(--bg-color); /* Use background color variable */
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.03); /* Subtle shadow at top */
+    z-index: 15;
 }
 
 .input-box {
-    width: 100%; max-width: 600px;
-    background: white;
-    border: 2px solid #ccc;
-    border-radius: 50px;
-    padding: 10px 20px;
+    width: 100%; max-width: 700px; /* Wider input box */
+    background: var(--input-box-bg);
+    border: 1px solid var(--input-box-border); /* Thinner border */
+    border-radius: 25px; /* More rounded */
+    padding: 8px 15px; /* Adjusted padding */
     display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Softer shadow */
 }
 
 .input-box input {
-    flex: 1; border: none; outline: none; font-size: 15px;
+    flex: 1; border: none; outline: none; font-size: 1em; background: transparent; color: var(--text-color);
+    padding: 5px 0; /* Vertical padding for input text */
 }
 
-.icon-btn { color: #888; cursor: pointer; font-size: 18px; transition: color 0.3s; }
-.icon-btn:hover { color: #2d2d39; }
+.icon-btn {
+    color: var(--icon-btn-color);
+    cursor: pointer;
+    font-size: 1.1em; /* Consistent font size */
+    transition: color 0.3s;
+    padding: 5px; /* Make clickable area larger */
+    border-radius: 50%; /* Round icons */
+}
+.icon-btn:hover { color: var(--primary-color); background-color: rgba(var(--primary-color-rgb), 0.1); }

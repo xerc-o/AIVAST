@@ -12,16 +12,16 @@ TIMEOUTS = {
 }
 MAX_OUTPUT = 20000
 
-def run_command_async(command: str) -> Dict:
+def run_command_async(command: list) -> Dict:
     """
     Executes a command as a background process, redirecting output to temp files.
     This is non-blocking.
     """
-    args = shlex.split(command)
-    if not args:
+    if not command:
         return {"ok": False, "error": "Empty command"}
 
-    tool = args[0]
+    tool = command[0]
+    args = command
 
     # Security Check: Whitelist tool
     tool_path = shutil.which(tool)
@@ -66,16 +66,16 @@ def run_command_async(command: str) -> Dict:
         return {"ok": False, "error": "exception", "details": str(e)}
 
 
-def run_command(command: str) -> Dict:
+def run_command(command: list) -> Dict:
     """
     Executes a command synchronously and returns structured result.
     Uses absolute executable path (shutil.which) and sanitizes args.
     """
-    args = shlex.split(command)
-    if not args:
+    if not command:
         return {"ok": False, "error": "Empty command"}
 
-    tool = args[0]
+    tool = command[0]
+    args = command
 
     # Resolve executable path and whitelist tool
     tool_path = shutil.which(tool)

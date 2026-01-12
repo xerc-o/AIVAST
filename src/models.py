@@ -26,6 +26,7 @@ class ScanHistory(db.Model):
     __tablename__ = "scan_history"
     
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # Add user_id foreign key
     target = db.Column(db.String(500), nullable=False, index=True)
     tool = db.Column(db.String(50), nullable=False)
     command = db.Column(db.Text, nullable=False)

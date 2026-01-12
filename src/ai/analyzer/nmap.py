@@ -1,6 +1,6 @@
 from .base import BaseAnalyzer
 from .structured_parser import extract_structured_data
-import json
+
 
 class NmapAnalyzer(BaseAnalyzer):
     tool_name = "nmap"

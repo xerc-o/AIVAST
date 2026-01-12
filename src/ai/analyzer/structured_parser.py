@@ -1,4 +1,3 @@
-import json
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional
 
@@ -135,6 +134,15 @@ def parse_nikto_xml(xml_output: str) -> Dict:
         return {"parsed": False, "error": f"Parse error: {str(e)}"}
 
 
+def _get_xml_content(stdout: str, stderr: str) -> Optional[str]:
+    """Extracts XML content from stdout or stderr."""
+    if "<?xml" in stdout:
+        return stdout
+    if "<?xml" in stderr:
+        return stderr
+    return None
+
+
 def extract_structured_data(tool: str, stdout: str, stderr: str = "") -> Dict:
     """
     Extract structured data dari output tool.
@@ -147,19 +155,14 @@ def extract_structured_data(tool: str, stdout: str, stderr: str = "") -> Dict:
     Returns:
         Dict dengan structured data atau empty dict jika parsing gagal
     """
-    if tool == "nmap":
-        # Coba parse sebagai XML jika ada
-        if "<?xml" in stdout:
-            return parse_nmap_xml(stdout)
-        # Jika tidak XML, return empty (akan dihandle oleh LLM)
+    xml_content = _get_xml_content(stdout, stderr)
+    if not xml_content:
         return {"parsed": False, "format": "text"}
+
+    if tool == "nmap":
+        return parse_nmap_xml(xml_content)
     
     elif tool == "nikto":
-        # Coba parse sebagai XML jika ada
-        if "<?xml" in stdout or "<?xml" in stderr:
-            xml_content = stdout if "<?xml" in stdout else stderr
-            return parse_nikto_xml(xml_content)
-        # Jika tidak XML, return empty (akan dihandle oleh LLM)
-        return {"parsed": False, "format": "text"}
+        return parse_nikto_xml(xml_content)
     
     return {"parsed": False, "error": "Unknown tool"}
