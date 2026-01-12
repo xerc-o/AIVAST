@@ -347,6 +347,7 @@ header {
     cursor: pointer;
     color: var(--text-color);
     transition: color 0.3s ease;
+    display: block; /* Ensure it's always visible */
 }
 .menu-btn:hover {
     color: var(--primary-color);
