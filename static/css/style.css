@@ -314,8 +314,17 @@ body.chat-page {
     background-color: var(--bg-color);
     height: 100vh;
     display: flex;
+    flex-direction: column; /* Ensure vertical stacking for chat page elements */
     font-size: 16px; /* Ensure base font size is applied */
     overflow: hidden; /* Prevent body scroll */
+}
+
+/* Main content area for chat page (excluding fixed header and input) */
+.chat-main-content {
+    display: flex;
+    flex: 1; /* Allow to grow and take available space */
+    overflow: hidden; /* Manage scrolling internally */
+    position: relative; /* For sidebar positioning context */
 }
 
 /* Chat page header - position fixed at top */
@@ -419,19 +428,20 @@ header .theme-toggle-btn {
 
 /* Desktop sidebar */
 @media (min-width: 768px) {
+    .chat-main-content {
+        padding-left: 250px; /* Space for the fixed sidebar */
+    }
     .sidebar {
-        position: sticky; /* Stick to the viewport */
+        position: fixed; /* Keep sidebar fixed on desktop */
         top: 0;
         left: 0;
         width: 250px; /* Fixed width for desktop */
         height: 100vh; /* Full viewport height */
         box-shadow: none; /* No shadow when fixed */
         border-right: 1px solid var(--border-color); /* Separator line */
-        z-index: 1; /* Below header if header is fixed */
+        z-index: 10; /* Ensure it's below header */
         padding-top: 80px; /* Adjust for fixed header */
-        /* Ensure it's always visible on desktop */
-        transform: translateX(0);
-        left: 0;
+        transform: translateX(0); /* Ensure it's visible */
     }
     .sidebar .close-btn {
         display: none; /* Hide close button on desktop */
@@ -450,25 +460,16 @@ header .theme-toggle-btn {
 }
 
 .chat-container {
-    flex: 1;
+    flex: 1; /* Allow to grow and take remaining vertical space */
     padding: 20px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: flex-start; /* Align messages to the start */
     position: relative;
-    padding-bottom: 90px; /* Space for the input area */
-    width: 100%; /* Take full width on small screens */
-    margin-top: 60px; /* Space for fixed header */
-}
-
-/* Adjust chat container for desktop when sidebar is visible */
-@media (min-width: 768px) {
-    .chat-container {
-        margin-left: 250px; /* Push chat container to the right by sidebar width */
-        width: calc(100% - 250px); /* Adjust width */
-        margin-top: 0; /* Header is inside the main layout now */
-    }
+    padding-top: 70px; /* Space for fixed header */
+    padding-bottom: 90px; /* Space for fixed input area */
+    width: 100%; /* Take full width */
 }
 
 .welcome-screen {
