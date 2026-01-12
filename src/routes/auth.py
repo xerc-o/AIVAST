@@ -1,9 +1,13 @@
-from flask import Blueprint, request, redirect, url_for, flash
+from flask import Blueprint, request, redirect, url_for, flash, render_template
 from flask_login import login_user, logout_user, login_required
 from models import db, User
 from werkzeug.security import generate_password_hash
 
 auth_bp = Blueprint("auth", __name__)
+
+@auth_bp.route("/signup_page", methods=["GET"])
+def signup_page():
+    return render_template("signup.html")
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():

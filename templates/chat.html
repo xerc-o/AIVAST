@@ -24,18 +24,18 @@
             <li class="history-item"><i class="fa-regular fa-message"></i> Apa itu Cyber Security?</li>
             <li class="history-item"><i class="fa-regular fa-message"></i> Cara install Linux</li>
         </ul>
-        <button onclick="logout()" style="width:100%; padding:12px; background:#2d2d39; color:white; border:none; border-radius:10px; cursor:pointer;">Logout</button>
+        <button onclick="logout()" class="logout-btn" style="width:100%; padding:12px; background:#2d2d39; color:white; border:none; border-radius:10px; cursor:pointer;">Logout</button>
     </div>
 
     <header>
         <i class="fa-solid fa-bars menu-btn" onclick="toggleSidebar()"></i>
         <div class="brand-info">
             <div class="brand-logo">
-                Mini <strong>PBL</strong> <i class="fa-solid fa-dragon logo-icon"></i>
+                AIVAST <i class="fa-solid fa-dragon logo-icon"></i>
             </div>
         </div>
         <button id="theme-toggle" class="theme-toggle-btn">
-            <i class="fas fa-moon"></i>
+            <i class="fa-solid fa-circle-half-stroke"></i>
         </button>
     </header>
 
@@ -51,9 +51,9 @@
 
         <div class="input-area">
             <div class="input-box">
-                <i class="fa-solid fa-magnifying-glass icon-btn"></i>
+                <i class="fa-regular fa-comment-dots icon-btn"></i>
                 <input type="text" id="msgInput" placeholder="Ask me anything...">
-                <i class="fa-solid fa-microphone icon-btn"></i>
+                <i class="fa-solid fa-paper-plane icon-btn" id="sendBtn"></i>
             </div>
         </div>
     </div>
@@ -67,12 +67,12 @@
         function setTheme(theme) {
             if (theme === 'dark') {
                 body.classList.add('dark-mode');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
+                themeIcon.classList.remove('fa-sun'); // Remove sun
+                themeIcon.classList.add('fa-moon'); // Add moon
             } else {
                 body.classList.remove('dark-mode');
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
+                themeIcon.classList.remove('fa-moon'); // Remove moon
+                themeIcon.classList.add('fa-sun'); // Add sun
             }
             localStorage.setItem('theme', theme);
         }

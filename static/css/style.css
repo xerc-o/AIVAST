@@ -216,7 +216,7 @@ body:not(.chat-page) {
 .input-group { position: relative; width: 100%; }
 .input-group input {
     width: 100%;
-    padding: 12px 15px; /* Added horizontal padding */
+    padding: 15px; /* Added horizontal padding */
     border: 1px solid var(--border-color); /* Solid border */
     border-radius: 8px; /* Rounded corners */
     background: var(--input-box-bg); /* Use input box background variable */
@@ -370,12 +370,13 @@ header .theme-toggle-btn {
     margin-left: 15px; /* Space from logo */
 }
 
+/* Sidebar for all screen sizes */
 .sidebar {
     position: fixed;
     top: 0;
-    left: -100%; /* Hidden by default, covers full width */
+    left: -100%; /* Hidden by default */
     width: 100%;
-    max-width: 300px; /* Max width for overlay on larger mobile devices */
+    max-width: 280px; /* A bit narrower for general use */
     height: 100%;
     background: var(--sidebar-bg);
     box-shadow: 2px 0 10px rgba(0,0,0,0.15);
@@ -386,7 +387,26 @@ header .theme-toggle-btn {
     flex-direction: column;
 }
 
-.sidebar.active { left: 0; }
+/* ... existing sidebar styles ... */
+
+.logout-btn {
+    width: 100%;
+    padding: 12px;
+    background: #2d2d39; /* Consider using a CSS variable here if it fits the theme */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: auto; /* Push to the bottom */
+    transition: background 0.3s ease;
+}
+.logout-btn:hover {
+    background: #444455;
+}
+
+.sidebar.active {
+    left: 0;
+}
 
 .sidebar-header {
     display: flex;
@@ -398,64 +418,46 @@ header .theme-toggle-btn {
     color: var(--text-color);
 }
 
-.close-btn { cursor: pointer; font-size: 1.4em; color: var(--subtitle-color); }
-.close-btn:hover { color: var(--primary-color); }
-
-.history-list { list-style: none; overflow-y: auto; flex: 1; padding-right: 5px; }
-.history-item {
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    background: var(--history-item-bg);
-    border-radius: 10px;
+.close-btn {
     cursor: pointer;
-    font-size: 0.95em;
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.2s ease, color 0.2s ease;
+    font-size: 1.4em;
+    color: var(--subtitle-color);
 }
-.history-item:hover {
-    background: var(--history-item-hover-bg);
-    color: var(--primary-color);
-}
-.history-item i {
-    color: var(--icon-btn-color);
-}
-.history-item:hover i {
+.close-btn:hover {
     color: var(--primary-color);
 }
 
-/* Desktop sidebar */
+/* Ensure menu button is always visible */
+.menu-btn {
+    font-size: 1.5em; /* Slightly larger */
+    cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+    display: block; /* Ensure it's always visible */
+}
+
+/* Adjust chat-main-content padding for when sidebar is open */
+.chat-main-content.sidebar-open { /* New class to apply when sidebar is open */
+    padding-left: 280px; /* Space for the sidebar width */
+}
+
+/* For desktop, adjust input area when sidebar is open */
+.input-area.sidebar-open {
+    left: 280px; /* Push input area to the right by sidebar width */
+    width: calc(100% - 280px); /* Adjust width */
+}
+
+/* On larger screens, the sidebar is initially hidden, but the content should not have static padding */
 @media (min-width: 768px) {
-    .chat-main-content {
-        padding-left: 250px; /* Space for the fixed sidebar */
-    }
     .sidebar {
-        position: fixed; /* Keep sidebar fixed on desktop */
-        top: 0;
+        max-width: 280px; /* Keep consistent width */
+    }
+    .chat-main-content {
+        padding-left: 0; /* Remove static padding, will be added by JS when sidebar is open */
+    }
+    .input-area {
         left: 0;
-        width: 250px; /* Fixed width for desktop */
-        height: 100vh; /* Full viewport height */
-        box-shadow: none; /* No shadow when fixed */
-        border-right: 1px solid var(--border-color); /* Separator line */
-        z-index: 10; /* Ensure it's below header */
-        padding-top: 80px; /* Adjust for fixed header */
-        transform: translateX(0); /* Ensure it's visible */
-    }
-    .sidebar .close-btn {
-        display: none; /* Hide close button on desktop */
-    }
-    .sidebar-header {
-        position: absolute; /* Position header for fixed sidebar */
-        top: 20px;
-        left: 20px;
-        right: 20px;
-        margin-bottom: 0; /* Reset margin */
-        justify-content: center; /* Center header text */
-    }
-    .sidebar .history-list {
-        padding-top: 10px; /* Space from sidebar header */
+        width: 100%;
     }
 }
 
@@ -465,11 +467,13 @@ header .theme-toggle-btn {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Align messages to the start */
+    /* align-items: flex-start;  Removing this to allow individual bubbles to center or align */
     position: relative;
     padding-top: 70px; /* Space for fixed header */
     padding-bottom: 90px; /* Space for fixed input area */
-    width: 100%; /* Take full width */
+    width: 100%;
+    max-width: 900px; /* Set a max-width for the chat container */
+    margin: 0 auto; /* Center the chat container */
 }
 
 .welcome-screen {

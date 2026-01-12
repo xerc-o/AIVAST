@@ -91,41 +91,46 @@ async function pollScanStatus(scanId, botMessageBubble) {
     }, 3000); // Poll every 3 seconds
 }
 
+// New function to handle sending messages
+async function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const message = input.value.trim();
+
+    if (message !== "") {
+        displayMessage(message, 'user');
+        input.value = '';
+
+        const botMessageBubble = displayMessage("Memulai scan... <i class='fa-solid fa-spinner fa-spin'></i>", 'bot'); // Display initial scanning message
+
+        try {
+            const response = await fetch('/api/v1/scans', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: message, use_ai: true })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.scan_id) {
+                pollScanStatus(data.scan_id, botMessageBubble); // Start polling
+            } else {
+                botMessageBubble.innerHTML = "Gagal memulai scan: ID scan tidak ditemukan.";
+            }
+
+        } catch (error) {
+            console.error("Error starting scan:", error);
+            botMessageBubble.innerHTML = "Maaf, terjadi kesalahan saat memulai scan.";
+        }
+    }
+}
+
 // Fungsi untuk mengirim pesan ke backend saat menekan Enter
 async function handleEnter(e) {
     if (e.key === 'Enter') {
-        const input = document.getElementById('msgInput');
-        const message = input.value.trim();
-
-        if (message !== "") {
-            displayMessage(message, 'user');
-            input.value = '';
-
-            const botMessageBubble = displayMessage("Memulai scan... <i class='fa-solid fa-spinner fa-spin'></i>", 'bot'); // Display initial scanning message
-
-            try {
-                const response = await fetch('/api/v1/scans', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ target: message, use_ai: true })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                if (data.scan_id) {
-                    pollScanStatus(data.scan_id, botMessageBubble); // Start polling
-                } else {
-                    botMessageBubble.innerHTML = "Gagal memulai scan: ID scan tidak ditemukan.";
-                }
-
-            } catch (error) {
-                console.error("Error starting scan:", error);
-                botMessageBubble.innerHTML = "Maaf, terjadi kesalahan saat memulai scan.";
-            }
-        }
+        sendMessage();
     }
 }
 
@@ -197,7 +202,13 @@ async function loadHistoryScan(scanId, target) {
 
 // Fungsi untuk toggle sidebar
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
+    const sidebar = document.getElementById('sidebar');
+    const chatMainContent = document.querySelector('.chat-main-content');
+    const inputArea = document.querySelector('.input-area');
+
+    sidebar.classList.toggle('active');
+    chatMainContent.classList.toggle('sidebar-open');
+    inputArea.classList.toggle('sidebar-open');
 }
 
 // Fungsi untuk logout
@@ -209,8 +220,13 @@ function logout() {
 // Event listener untuk dieksekusi setelah DOM dimuat
 document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('msgInput');
+    const sendButton = document.getElementById('sendBtn'); // Get the send button
+
     if (chatInput) {
         chatInput.addEventListener('keydown', handleEnter);
+    }
+    if (sendButton) { // Add event listener for the send button
+        sendButton.addEventListener('click', sendMessage);
     }
 
     // Hanya jalankan fetchHistory jika kita berada di halaman chat

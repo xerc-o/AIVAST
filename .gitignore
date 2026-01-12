@@ -1,48 +1,66 @@
-.env
-.env.*
-__pycache__/
-*.log
-
-# Python / Flask
-venv/
-.venv/
+##################################
+# PYTHON BYTECODE / CACHE
+##################################
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+**/__pycache__/
 
-# Config & sensitive keys
+##################################
+# VIRTUAL ENVIRONMENT
+##################################
+venv/
+.venv/
+env/
+ENV/
+
+##################################
+# ENV / SECRETS (ALL VARIANTS)
+##################################
 .env
-instance/*.py     # jika menyimpan secret
-instance/*.env
-instance/local_settings.py
+.env.*
+*.env
+*.key
+*.pem
+*.crt
+*.pfx
 
-# Build artifacts
-*.egg-info/
-dist/
-build/
+##################################
+# INSTANCE / RUNTIME DATA (FLASK)
+##################################
+instance/
+*.db
+*.sqlite
+*.sqlite3
 
-# Logs & runtime
+##################################
+# LOGS / TEMP FILES
+##################################
 *.log
 logs/
 tmp/
+.cache/
 
-# Python sensitive / config
-.env
-instance/*.py
-instance/*.env
-
-# Python artifacts
+##################################
+# BUILD / PACKAGE ARTIFACTS
+##################################
+dist/
+build/
 *.egg-info/
-__pycache__/
-*.pyc
+.eggs/
 
-# Local env
-venv/
-.venv/
+##################################
+# TEST / COVERAGE
+##################################
+.coverage
+coverage/
+htmlcov/
 
-instance/*.db
-.env
-instance/
-*.key
-*.pem
-
-
+##################################
+# OS / EDITOR (OPTIONAL BUT SAFE)
+##################################
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

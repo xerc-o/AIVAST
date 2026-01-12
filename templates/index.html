@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini PBL - Auth System</title>
+    <title>AIVAST - Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -21,11 +21,11 @@
         
         <header class="header-logo">
             <div class="brand-info">
-                <span class="brand-name">Mini <strong>PBL</strong></span>
+                <span class="brand-name">AIVAST</span>
                 <i class="fa-solid fa-dragon logo-icon"></i>
             </div>
             <button id="theme-toggle" class="theme-toggle-btn">
-                <i class="fas fa-moon"></i>
+                <i class="fa-solid fa-circle-half-stroke"></i>
             </button>
         </header>
 
@@ -50,59 +50,14 @@
                     <label class="remember-me">
                         <input type="checkbox" name="remember"> Remember Me
                     </label>
-                    <a href="#" onclick="switchView('forgot')" class="link-text">Forgot Password?</a>
+                    <a href="{{ url_for('main.index') }}" class="link-text">Forgot Password?</a> <!-- Placeholder for now -->
                 </div>
 
                 <button type="submit" class="btn-primary">Log In</button>
             </form>
 
             <div class="footer-text">
-                <p>Don't have an account? <a href="#" onclick="switchView('signup')">Sign Up</a></p>
-            </div>
-        </section>
-
-        <section id="signupSection" class="auth-section">
-            <div class="hero-section small-hero">
-                <h1 class="title">Create Account</h1>
-                <p class="subtitle">Join us and start your journey!</p>
-            </div>
-
-            <form class="auth-form" action="{{ url_for('auth.signup') }}" method="POST">
-                <div class="input-group">
-                    <input type="text" name="username" placeholder="Username" required>
-                </div>
-                <div class="input-group">
-                    <input type="email" name="email" placeholder="Email Address" required>
-                </div>
-                <div class="input-group password-group">
-                    <input type="password" name="password" placeholder="Password" required>
-                    <i class="fa-regular fa-eye toggle-password"></i>
-                </div>
-
-                <button type="submit" class="btn-primary">Sign Up</button>
-            </form>
-
-            <div class="footer-text">
-                <p>Already have an account? <a href="#" onclick="switchView('login')">Log In</a></p>
-            </div>
-        </section>
-
-        <section id="forgotSection" class="auth-section">
-            <div class="hero-section small-hero">
-                <h1 class="title">Forgot Password?</h1>
-                <p class="subtitle">Enter your email to receive reset instructions</p>
-            </div>
-
-            <form class="auth-form" onsubmit="event.preventDefault(); alert('Link Reset Dikirim!');">
-                <div class="input-group">
-                    <input type="email" placeholder="Enter your email" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Send Reset Link</button>
-            </form>
-
-            <div class="footer-text">
-                <p>Back to <a href="#" onclick="switchView('login')">Log In</a></p>
+                <p>Don't have an account? <a href="{{ url_for('auth.signup_page') }}">Sign Up</a></p>
             </div>
         </section>
     </div>
@@ -116,14 +71,32 @@
         function setTheme(theme) {
             if (theme === 'dark') {
                 body.classList.add('dark-mode');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
+                themeIcon.classList.remove('fa-regular', 'fa-sun'); // Remove sun
+                themeIcon.classList.add('fa-solid', 'fa-moon'); // Add solid moon
             } else {
                 body.classList.remove('dark-mode');
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
+                themeIcon.classList.remove('fa-solid', 'fa-moon'); // Remove moon
+                themeIcon.classList.add('fa-regular', 'fa-sun'); // Add regular sun
             }
             localStorage.setItem('theme', theme);
+        }
+
+        // Set theme on page load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else {
+            // Default to light mode if no theme is saved
+            setTheme('light');
+        }
+
+        // Initialize button icon based on current theme after theme is set
+        if (body.classList.contains('dark-mode')) {
+            themeIcon.classList.remove('fa-regular', 'fa-sun');
+            themeIcon.classList.add('fa-solid', 'fa-moon');
+        } else {
+            themeIcon.classList.remove('fa-solid', 'fa-moon');
+            themeIcon.classList.add('fa-regular', 'fa-sun');
         }
 
         themeToggle.addEventListener('click', () => {
@@ -134,15 +107,6 @@
                 setTheme('dark');
             }
         });
-
-        // Set theme on page load
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setTheme(savedTheme);
-        } else {
-            // Default to light mode if no theme is saved
-            setTheme('light');
-        }
     </script>
     
 </body>

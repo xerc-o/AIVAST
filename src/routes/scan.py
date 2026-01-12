@@ -103,7 +103,7 @@ def get_scan_status(scan_id):
     max_timeout = TIMEOUTS.get(scan.tool, 120) # Default to 120 seconds
 
     # Check for timeout
-    if scan.start_time and (datetime.now(timezone.utc) - scan.start_time).total_seconds() > max_timeout:
+    if scan.start_time and (datetime.now(timezone.utc) - scan.start_time.replace(tzinfo=timezone.utc)).total_seconds() > max_timeout:
         if scan.pid and psutil.pid_exists(scan.pid):
             try:
                 proc = psutil.Process(scan.pid)

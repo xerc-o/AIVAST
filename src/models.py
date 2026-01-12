@@ -6,6 +6,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
+def _safe_json_loads(data_string):
+    """Safely loads a JSON string, returns empty dict or string on failure."""
+    if data_string is None:
+        return None
+    try:
+        return json.loads(data_string)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON data", "raw_data": data_string}
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,12 +59,12 @@ class ScanHistory(db.Model):
             "id": self.id,
             "target": self.target,
             "tool": self.tool,
-            "command": json.loads(self.command),
+            "command": _safe_json_loads(self.command),
             "status": self.status,
             "risk_level": self.risk_level,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "execution": json.loads(self.execution_result) if self.execution_result else None,
-            "analysis": json.loads(self.analysis_result) if self.analysis_result else None
+            "execution": _safe_json_loads(self.execution_result),
+            "analysis": _safe_json_loads(self.analysis_result)
         }
     
     def __repr__(self):
