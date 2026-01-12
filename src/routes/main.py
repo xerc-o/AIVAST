@@ -13,22 +13,4 @@ def index():
 def chat_page():
     return render_template("chat.html")
 
-@main_bp.route("/chat", methods=["POST"])
-@login_required
-def chat():
-    data = request.get_json()
-    message = data.get("message")
 
-    if not message:
-        return jsonify({"error": "message is required"}), 400
-
-    try:
-        response = run_command_async(message)
-        return jsonify({
-            "input": message,
-            "output": response
-        })
-    except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500

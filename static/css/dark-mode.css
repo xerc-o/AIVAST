@@ -17,6 +17,7 @@ body.dark-mode {
     --input-box-bg: #16213e;
     --input-box-border: #3e2060;
     --icon-btn-color: #b0b0b0;
+    --primary-color-rgb: 15, 52, 96; /* RGB for dark mode --primary-color */
 
     /* Chat specific */
     --sidebar-bg: #16213e;

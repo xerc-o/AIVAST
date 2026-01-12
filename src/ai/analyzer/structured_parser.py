@@ -27,6 +27,9 @@ def parse_nmap_xml(xml_output: str) -> Dict:
                 "addresses": []
             }
             
+            host_ports = [] # Initialize host-specific ports list
+            host_services = [] # Initialize host-specific services list
+            
             # Get addresses
             for address in host.findall('address'):
                 host_info["addresses"].append({
@@ -54,17 +57,20 @@ def parse_nmap_xml(xml_output: str) -> Dict:
                             "version": service_elem.get('version', ''),
                             "extrainfo": service_elem.get('extrainfo', '')
                         }
-                        services.append(port_info["service"])
+                        host_services.append(port_info["service"]) # Add to host-specific services
                     
-                    ports.append(port_info)
-                    host_info["ports"] = ports
-        
-        hosts.append(host_info)
+                    host_ports.append(port_info) # Add to host-specific ports
+            
+            host_info["ports"] = host_ports # Assign host-specific ports
+            hosts.append(host_info)
+            # Accumulate all services for a global list, if needed, otherwise remove the global 'services' list entirely
+            services.extend(host_services)
+            ports.extend(host_ports)
         
         return {
             "hosts": hosts,
-            "ports": ports,
-            "services": services,
+            "ports": ports, # Global list of all ports
+            "services": services, # Global list of all services
             "parsed": True
         }
     except ET.ParseError as e:

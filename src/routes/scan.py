@@ -7,7 +7,7 @@ from models import db, ScanHistory
 import json
 import psutil
 import os
-from datetime import datetime # Import datetime
+from datetime import datetime, timezone # Import datetime and timezone
 from executor.runner import TIMEOUTS # Import TIMEOUTS dictionary
 
 # Helper function to clean up temporary files
@@ -50,7 +50,7 @@ def start_scan():
         tool=plan.get("tool"),
         command=json.dumps(plan.get("command")),  # Serialize command list to JSON string
         status='running',
-        start_time=datetime.utcnow(), # Record start time
+        start_time=datetime.now(timezone.utc), # Record start time
         user_id=current_user.id # Associate with current user
     )
     db.session.add(new_scan)
@@ -103,7 +103,7 @@ def get_scan_status(scan_id):
     max_timeout = TIMEOUTS.get(scan.tool, 120) # Default to 120 seconds
 
     # Check for timeout
-    if scan.start_time and (datetime.utcnow() - scan.start_time).total_seconds() > max_timeout:
+    if scan.start_time and (datetime.now(timezone.utc) - scan.start_time).total_seconds() > max_timeout:
         if scan.pid and psutil.pid_exists(scan.pid):
             try:
                 proc = psutil.Process(scan.pid)

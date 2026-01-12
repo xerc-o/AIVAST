@@ -31,13 +31,10 @@ class BaseAnalyzer:
                 parsed = safe_parse_json(raw_response)
                 logger.debug(f"LLM Parsed Response: {parsed}") # Log parsed response
                 return parsed
-            elif isinstance(raw_response, dict):
-                logger.debug(f"LLM Parsed Response (dict): {raw_response}")
-                return raw_response
             else:
                 return {
                     "risk": "unknown",
-                    "error": "Unexpected response type from LLM",
+                    "error": "Unexpected response type from LLM (expected string)",
                     "raw": str(raw_response)
                 }
         except Exception as e:

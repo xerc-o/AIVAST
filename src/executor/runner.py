@@ -93,15 +93,8 @@ def run_command(command: list) -> Dict:
                     continue
             return {"ok": False, "error": "Forbidden argument detected"}
 
-    # Build sanitized arg list (keep original args except any explicit forbidden handled above)
-    sanitized_args = []
-    skip_next = False
-    for i, a in enumerate(args[1:]):
-        if skip_next:
-            skip_next = False
-            continue
-        # keep as-is; earlier checks already prevented forbidden patterns
-        sanitized_args.append(a)
+    # Build sanitized arg list (simply copy args[1:] as checks already performed)
+    sanitized_args = args[1:]
 
     try:
         result = subprocess.run(

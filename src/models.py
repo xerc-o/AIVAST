@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -42,7 +42,7 @@ class ScanHistory(db.Model):
     analysis_result = db.Column(db.Text)   # JSON string
     risk_level = db.Column(db.String(20), index=True)
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     start_time = db.Column(db.DateTime, nullable=True) # New column
     
     def to_dict(self):
@@ -51,7 +51,7 @@ class ScanHistory(db.Model):
             "id": self.id,
             "target": self.target,
             "tool": self.tool,
-            "command": self.command,
+            "command": json.loads(self.command),
             "status": self.status,
             "risk_level": self.risk_level,
             "created_at": self.created_at.isoformat() if self.created_at else None,
