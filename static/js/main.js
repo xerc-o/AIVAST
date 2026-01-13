@@ -142,7 +142,7 @@ async function fetchHistory() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        
+
         const historyList = document.querySelector('.history-list');
         historyList.innerHTML = ''; // Kosongkan list
 
@@ -151,13 +151,24 @@ async function fetchHistory() {
                 const item = document.createElement('li');
                 item.className = 'history-item';
                 item.dataset.scanId = scan.id; // Store scan ID
-                
-                const icon = document.createElement('i');
-                icon.className = 'fa-regular fa-message';
-                
-                item.appendChild(icon);
-                item.append(` ${scan.target} (${scan.status})`); // Tambahkan target dan status
-                
+
+                // Create container for text content
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'history-info';
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'history-title';
+                titleSpan.textContent = scan.target;
+
+                const badgeSpan = document.createElement('span');
+                badgeSpan.className = `badge ${scan.status.toLowerCase()}`;
+                badgeSpan.textContent = scan.status;
+
+                contentDiv.appendChild(titleSpan);
+                contentDiv.appendChild(badgeSpan);
+
+                item.appendChild(contentDiv);
+
                 // Add click event listener
                 item.addEventListener('click', () => loadHistoryScan(scan.id, scan.target));
 
@@ -182,6 +193,7 @@ async function loadHistoryScan(scanId, target) {
     chatContainer.innerHTML = ''; // Clear the chat window
 
     displayMessage(target, 'user');
+
     const botMessageBubble = displayMessage("Loading history... <i class='fa-solid fa-spinner fa-spin'></i>", 'bot');
 
     try {
@@ -193,7 +205,7 @@ async function loadHistoryScan(scanId, target) {
 
         const summary = data.analysis?.summary || "Analisis selesai. Tidak ada ringkasan yang tersedia.";
         botMessageBubble.innerHTML = summary;
-    } catch(error) {
+    } catch (error) {
         console.error("Error loading history scan:", error);
         botMessageBubble.innerHTML = "Gagal memuat riwayat scan.";
     }
@@ -232,12 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hanya jalankan fetchHistory jika kita berada di halaman chat
     if (document.querySelector('.chat-container')) {
         fetchHistory();
-        
+
         // Hapus dummy messages
         const dummyUserMsg = document.getElementById('dummyUserMsg');
-        if(dummyUserMsg) dummyUserMsg.remove();
-        
+        if (dummyUserMsg) dummyUserMsg.remove();
+
         const dummyBotMsg = document.getElementById('dummyBotMsg');
-        if(dummyBotMsg) dummyBotMsg.remove();
+        if (dummyBotMsg) dummyBotMsg.remove();
     }
 });
