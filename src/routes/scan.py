@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from ai.planner import plan_scan
 from ai.analyzer import analyze_output
 from executor.runner import run_command_async
-from models import db, ScanHistory
+from models import db, ScanHistory, ChatSession
 import json
 import psutil
 import os
@@ -37,21 +37,36 @@ def start_scan():
 
     target = data["target"].strip()
     use_ai = data.get("use_ai", True)
+    tool = data.get("tool")
 
     # 1. Planning
     try:
-        plan = plan_scan(target, use_ai=use_ai)
+        plan = plan_scan(target, use_ai=use_ai, tool=tool)
     except Exception as e:
         return jsonify({"error": f"Planner failed: {str(e)}"}), 500
 
-    # 2. Create initial record in DB
+    # 2. Handle Session (Create or Verify)
+    session_id = data.get("session_id")
+    if session_id:
+        # Verify session ownership
+        session = ChatSession.query.filter_by(id=session_id, user_id=current_user.id).first()
+        if not session:
+            return jsonify({"error": "Session not found"}), 404
+    else:
+        # Create new session automatically if not provided
+        session = ChatSession(user_id=current_user.id, title=target)
+        db.session.add(session)
+        db.session.commit()
+    
+    # 3. Create initial record in DB
     new_scan = ScanHistory(
         target=target,
         tool=plan.get("tool"),
         command=json.dumps(plan.get("command")),  # Serialize command list to JSON string
         status='running',
         start_time=datetime.now(timezone.utc), # Record start time
-        user_id=current_user.id # Associate with current user
+        user_id=current_user.id, # Associate with current user
+        session_id=session.id # Link to session
     )
     db.session.add(new_scan)
     db.session.commit()
@@ -74,7 +89,8 @@ def start_scan():
         # 4. Immediate Response
         return jsonify({
             "message": "Scan started successfully",
-            "scan_id": new_scan.id
+            "scan_id": new_scan.id,
+            "session_id": session.id
         }), 202
 
     except Exception as e:
@@ -97,7 +113,7 @@ def get_scan_status(scan_id):
         return jsonify({"error": "forbidden"}), 403
 
     if scan.status != 'running':
-        return jsonify({"status": scan.status, "analysis": json.loads(scan.analysis_result or '{}')})
+        return jsonify(scan.to_dict())
 
     # Get expected timeout from runner.py
     max_timeout = TIMEOUTS.get(scan.tool, 120) # Default to 120 seconds
@@ -121,14 +137,14 @@ def get_scan_status(scan_id):
         db.session.commit()
         # Cleanup temp files immediately
         _cleanup_temp_files(scan)
-        return jsonify({"status": "failed", "error": f"Scan timed out after {max_timeout} seconds."}), 200
+        return jsonify(scan.to_dict()), 200
 
     # Check if the process is still running or is a zombie
     if scan.pid:
         try:
             proc = psutil.Process(scan.pid)
             if proc.is_running() and proc.status() != psutil.STATUS_ZOMBIE:
-                return jsonify({"status": "running"})
+                return jsonify({"status": "running", "target": scan.target, "tool": scan.tool})
             # If we reach here, PID exists, but proc.is_running() is False or it's a zombie.
             # This means the process has terminated (or is a zombie that needs reaping).
             # Proceed to process results.

@@ -7,7 +7,7 @@ import shlex
 # ==========================================================
 # RULE-BASED PLANNER (DEFAULT & SAFE)
 # ==========================================================
-def plan_scan_rule_based(target: str) -> Dict[str, str]:
+def plan_scan_rule_based(target: str, forced_tool: str = None) -> Dict[str, str]:
     """
     Planner tanpa AI.
     Aman, deterministik, cocok untuk testing awal.
@@ -15,6 +15,23 @@ def plan_scan_rule_based(target: str) -> Dict[str, str]:
 
     target = target.strip()
 
+    # Respect user choice if provided
+    if forced_tool:
+        tool = forced_tool.lower()
+        if tool == "nikto":
+            return {
+                "tool": "nikto",
+                "command": ["nikto", "-h", target, "-Format", "xml"],
+                "reason": "User selected Nikto"
+            }
+        elif tool == "nmap":
+            return {
+                "tool": "nmap",
+                "command": ["nmap", "-sV", "-T4", "-oX", "-", target],
+                "reason": "User selected Nmap"
+            }
+
+    # Default logic
     if target.startswith("http://") or target.startswith("https://"):
         return {
             "tool": "nikto",
@@ -32,11 +49,20 @@ def plan_scan_rule_based(target: str) -> Dict[str, str]:
 # ==========================================================
 # AI PLANNER (IMPLEMENTASI LENGKAP)
 # ==========================================================
-def plan_scan_ai(target: str) -> Dict[str, str]:
+def plan_scan_ai(target: str, forced_tool: str = None) -> Dict[str, str]:
     """
     AI-powered planner yang menggunakan LLM untuk menentukan tool terbaik.
     """
+    
+    # If forced_tool is provided, we can skip AI or guide it to just generate params?
+    # For now, let's just force the tool in the prompt to ensure correct command generation for that tool.
+    
+    tool_instruction = ""
+    if forced_tool:
+        tool_instruction = f"User has explicitly selected {forced_tool}. YOU MUST USE {forced_tool}."
+
     prompt = f"""You are a cybersecurity expert. Given a target, determine the best scanning tool and command.
+{tool_instruction}
 
 Target: {target}
 
@@ -56,6 +82,7 @@ Rules:
 - If target is IP address or hostname (without http/https), use nmap
 - For nmap, use: "nmap -sV -T4 -oX - [target]"
 - For nikto, use: "nikto -h [target]"
+- IF USER SELECTED A TOOL, IGNORE DEFAULT RULES AND USE THAT TOOL.
 
 Target: {target}"""
 
@@ -76,7 +103,10 @@ Target: {target}"""
         
         # Validate and sanitize
         if plan.get("tool") not in ["nmap", "nikto"]:
-            raise ValueError(f"Invalid tool: {plan.get('tool')}. Must be 'nmap' or 'nikto'")
+             # If AI hallucinated or refused, fallback to forced tool if present
+             if forced_tool:
+                 return plan_scan_rule_based(target, forced_tool)
+             raise ValueError(f"Invalid tool: {plan.get('tool')}. Must be 'nmap' or 'nikto'")
         
         command_str = plan.get("command")
         if not command_str:
@@ -85,47 +115,45 @@ Target: {target}"""
         # Security: Use shlex to parse the command string
         command_list = shlex.split(command_str)
         plan["command"] = command_list
+        
+        # Override tool name just in case
+        if forced_tool and plan.get("tool") != forced_tool:
+             print(f"⚠️ AI returned {plan.get('tool')} but user forced {forced_tool}. Fallback to rule-based.")
+             return plan_scan_rule_based(target, forced_tool)
 
         # Log untuk debugging
         print(f"✅ AI Planner selected: {plan.get('tool')} - {plan.get('reason', 'N/A')}")
             
         return plan
-    except json.JSONDecodeError as e:
-        error_msg = f"Failed to parse AI response as JSON: {str(e)}. Response: {response[:200]}"
-        print(f"❌ AI Planner JSON Error: {error_msg}")
-        raise ValueError(error_msg)
-    except KeyError as e:
-        error_msg = f"Missing required field in AI response: {str(e)}"
-        print(f"❌ AI Planner KeyError: {error_msg}")
-        raise ValueError(error_msg)
     except Exception as e:
-        error_msg = f"AI planner failed: {str(e)}"
-        print(f"❌ AI Planner Exception: {error_msg}")
-        raise ValueError(error_msg)
+        print(f"❌ AI Planner Error: {str(e)}")
+        # Fallback to rule based with forced tool
+        return plan_scan_rule_based(target, forced_tool)
 
 
 # ==========================================================
 # PUBLIC API (DIPANGGIL ORCHESTRATOR)
 # ==========================================================
-def plan_scan(target: str, use_ai: bool = False) -> Dict[str, str]:
+def plan_scan(target: str, use_ai: bool = False, tool: str = None) -> Dict[str, str]:
     """
     Entry point planner.
 
     use_ai=False -> rule-based (default, aman)
     use_ai=True  -> AI-powered (lebih fleksibel)
+    tool         -> Optional forced tool name (nmap/nikto)
     """
 
     if use_ai:
         try:
-            print(f"🤖 Using AI Planner for target: {target}")
-            result = plan_scan_ai(target)
+            print(f"🤖 Using AI Planner for target: {target} (Tool: {tool})")
+            result = plan_scan_ai(target, forced_tool=tool)
             print(f"✅ AI Planner result: {result.get('tool')} - {result.get('command')}")
             return result
         except Exception as e:
             # Fallback ke rule-based jika AI gagal
             print(f"⚠️ Warning: AI planner failed ({str(e)}), falling back to rule-based")
-            return plan_scan_rule_based(target)
+            return plan_scan_rule_based(target, forced_tool=tool)
     else:
-        print(f"📋 Using Rule-Based Planner for target: {target}")
+        print(f"📋 Using Rule-Based Planner for target: {target} (Tool: {tool})")
 
-    return plan_scan_rule_based(target)
+    return plan_scan_rule_based(target, forced_tool=tool)

@@ -28,13 +28,57 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
+class ChatSession(db.Model):
+    """Model untuk mengelompokkan scan dalam satu sesi percakapan."""
+    __tablename__ = "chat_session"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False, default="New Chat")
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Relationship to scans
+    scans = db.relationship('ScanHistory', backref='session', lazy=True, cascade="all, delete-orphan")
+    # Relationship to messages
+    messages = db.relationship('ChatMessage', backref='session', lazy=True, cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
+
+class ChatMessage(db.Model):
+    """Model untuk menyimpan pesan chat (non-scan) per sesi."""
+    __tablename__ = "chat_message"
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('chat_session.id'), nullable=False)
+    role = db.Column(db.String(20), nullable=False) # 'user' or 'assistant'
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "type": "message",
+            "id": self.id,
+            "role": self.role,
+            "content": self.content,
+            "timestamp": self.created_at.isoformat()
+        }
+
+
 class ScanHistory(db.Model):
     """Model untuk menyimpan history scanning."""
     
     __tablename__ = "scan_history"
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # Add user_id foreign key
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    session_id = db.Column(db.Integer, db.ForeignKey('chat_session.id'), nullable=True) # Link to session
     target = db.Column(db.String(500), nullable=False, index=True)
     tool = db.Column(db.String(50), nullable=False)
     command = db.Column(db.Text, nullable=False)
@@ -51,12 +95,14 @@ class ScanHistory(db.Model):
     risk_level = db.Column(db.String(20), index=True)
     
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    start_time = db.Column(db.DateTime, nullable=True) # New column
+    start_time = db.Column(db.DateTime, nullable=True)
     
     def to_dict(self):
         """Convert model ke dictionary."""
         return {
+            "type": "scan",
             "id": self.id,
+            "session_id": self.session_id,
             "target": self.target,
             "tool": self.tool,
             "command": _safe_json_loads(self.command),

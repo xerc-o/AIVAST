@@ -269,15 +269,18 @@ body:not(.chat-page) {
 }
 
 .robot-bg {
-    position: relative;
-    width: 150px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    /* Larger size */
     height: auto;
-    margin-bottom: 20px;
-    opacity: 1;
-    z-index: 1;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    opacity: 0.1;
+    /* Semi-transparent */
+    z-index: 0;
+    /* Behind content */
+    pointer-events: none;
 }
 
 .title {
@@ -309,7 +312,8 @@ body:not(.chat-page) {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    /* Reduced gap */
+    position: relative;
+    z-index: 2;
 }
 
 .input-group {
@@ -500,7 +504,7 @@ body.chat-page {
     display: flex;
     flex: 1;
     /* Allow to grow and take available space */
-    overflow: hidden;
+    overflow-y: auto;
     /* Manage scrolling internally */
     position: relative;
     /* For positioning children */
@@ -599,7 +603,26 @@ header .theme-toggle-btn {
     flex-direction: column;
 }
 
-/* ... existing sidebar styles ... */
+.new-chat-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.new-chat-btn:hover {
+    background: var(--link-hover-color);
+}
 
 .history-list {
     list-style: none;
@@ -617,6 +640,9 @@ header .theme-toggle-btn {
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     /* Prepare for border transition */
 }
 
@@ -630,6 +656,35 @@ header .theme-toggle-btn {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
+    /* Take available space */
+    overflow: hidden;
+}
+
+.history-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.history-item:hover .history-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--subtitle-color);
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.action-btn:hover {
+    color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .history-title {
@@ -751,7 +806,7 @@ header .theme-toggle-btn {
     flex: 1;
     /* Allow to grow and take remaining vertical space */
     padding: 20px;
-    overflow-y: auto;
+    /* overflow-y: auto;  REMOVED: Scrolling moved to main content */
     display: flex;
     flex-direction: column;
     /* align-items: flex-start;  Removing this to allow individual bubbles to center or align */
@@ -855,19 +910,75 @@ header .theme-toggle-btn {
 .bubble {
     background: var(--bubble-bg);
     padding: 12px 18px;
-    /* Adjusted padding */
     border-radius: 18px;
-    /* Softer corners */
     border: 1px solid var(--bubble-border);
-    /* Thinner border */
     font-size: 0.95em;
-    /* Consistent font size */
     color: var(--text-color);
-    max-width: 70%;
+    max-width: 75%;
+    /* Slightly wider for code */
     position: relative;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    /* Softer shadow */
-    line-height: 1.4;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    /* Prevent overflow */
+}
+
+/* Markdown Styles inside Bubble */
+.bubble p {
+    margin: 0 0 10px 0;
+}
+
+.bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.bubble ul,
+.bubble ol {
+    margin: 5px 0 10px 20px;
+}
+
+.bubble li {
+    margin-bottom: 5px;
+}
+
+.bubble strong {
+    font-weight: 600;
+    color: var(--bold-text-color, var(--primary-color));
+}
+
+.bubble h1,
+.bubble h2,
+.bubble h3 {
+    margin: 10px 0 5px 0;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* Code Block Styling */
+.bubble pre {
+    background: #282c34;
+    /* Atom One Dark bg match */
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9em;
+    position: relative;
+}
+
+.bubble code {
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+/* Inline Code */
+.bubble :not(pre)>code {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
 
 .message-wrapper.user .bubble {
@@ -875,6 +986,18 @@ header .theme-toggle-btn {
     color: var(--primary-text-color);
     border-color: var(--primary-color);
     box-shadow: 0 2px 5px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Fix text color in user bubble for markdown */
+.message-wrapper.user .bubble strong,
+.message-wrapper.user .bubble h1,
+.message-wrapper.user .bubble h2 {
+    color: var(--primary-text-color);
+}
+
+.message-wrapper.user .bubble :not(pre)>code {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .input-box {
@@ -892,6 +1015,8 @@ header .theme-toggle-btn {
     align-items: center;
     gap: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    /* Anchor for tool menu */
     /* Softer shadow */
 }
 
@@ -921,4 +1046,132 @@ header .theme-toggle-btn {
 .icon-btn:hover {
     color: var(--primary-color);
     background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.hacker-icon-mask {
+    width: 24px;
+    /* Slightly larger base size */
+    height: 24px;
+    background-color: var(--icon-btn-color);
+    /* Icon color */
+    -webkit-mask: url('../img/hacker_icon.png') no-repeat center;
+    mask: url('../img/hacker_icon.png') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    display: inline-block;
+    vertical-align: middle;
+    transition: background-color 0.3s;
+}
+
+.hacker-icon-mask:hover {
+    background-color: var(--primary-color);
+}
+
+.tool-menu {
+    position: absolute;
+    bottom: 60px;
+    /* Positioned directly above the node icon */
+    left: 0;
+    /* Aligned with the container start */
+    background: var(--card-bg);
+    border: 1px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+    /* Smaller width */
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: bottom left;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tool-menu.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+}
+
+.tool-option {
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--text-color);
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    justify-content: center;
+    /* Center text */
+}
+
+/* Remove icons in CSS if HTML still has them, or assume HTML update */
+.tool-option i {
+    display: none;
+}
+
+.tool-option:hover {
+    background: rgba(var(--primary-color-rgb), 0.15);
+    color: var(--primary-color);
+}
+
+/* Cancel option removed from menu, so styles not needed technically but keeping just in case */
+.tool-option.cancel-option {
+    display: none;
+    /* Hide cancel in menu as requested */
+}
+
+/* Update Input Placeholder when tool selected */
+.input-box.tool-active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.3);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+    /* Subtle tint */
+}
+
+/* Badge for selected tool inside input */
+.tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-color);
+    color: var(--primary-text-color);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-right: 5px;
+    white-space: nowrap;
+    animation: fadeIn 0.3s ease;
+}
+
+.tool-badge .cancel-btn {
+    cursor: pointer;
+    font-size: 0.9em;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.tool-badge .cancel-btn:hover {
+    opacity: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }

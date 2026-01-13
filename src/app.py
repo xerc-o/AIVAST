@@ -46,6 +46,9 @@ def create_app(config_overrides=None):
     
     # Initialize database
     db.init_app(app)
+    
+    from flask_migrate import Migrate
+    migrate = Migrate(app, db)
 
     # Setup Flask-Login
     login_manager = LoginManager()
@@ -61,6 +64,9 @@ def create_app(config_overrides=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(scan_bp, url_prefix="/api/v1")
     app.register_blueprint(history_bp, url_prefix="/api/v1")
+    
+    from routes.session import session_bp
+    app.register_blueprint(session_bp, url_prefix="/api/v1")
 
     # Custom CLI commands
     @app.cli.command("create-db")
