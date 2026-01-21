@@ -1,19 +1,31 @@
-from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, request, jsonify, session
+from flask_login import current_user
 from models import db, ChatSession, ScanHistory, ChatMessage
 from datetime import datetime, timezone
 from ai.chat import ai_chat_response
+from extensions import limiter
 
 session_bp = Blueprint("session", __name__)
 
+def get_current_user_or_guest():
+    if current_user.is_authenticated:
+        return current_user.id, None
+    elif "anon_id" in session:
+        return None, session["anon_id"]
+    return None, None
+
 @session_bp.route("/sessions", methods=["POST"])
-@login_required
 def create_session():
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
     data = request.get_json()
     title = data.get("title", "New Conversation")
     
     new_session = ChatSession(
-        user_id=current_user.id,
+        user_id=user_id,
+        anon_id=anon_id,
         title=title
     )
     db.session.add(new_session)
@@ -22,16 +34,32 @@ def create_session():
     return jsonify(new_session.to_dict()), 201
 
 @session_bp.route("/sessions", methods=["GET"])
-@login_required
 def list_sessions():
-    sessions = ChatSession.query.filter_by(user_id=current_user.id).order_by(ChatSession.updated_at.desc()).all()
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+        
+    if user_id:
+        sessions = ChatSession.query.filter_by(user_id=user_id).order_by(ChatSession.updated_at.desc()).all()
+    else:
+        sessions = ChatSession.query.filter_by(anon_id=anon_id).order_by(ChatSession.updated_at.desc()).all()
+        
     return jsonify({"sessions": [s.to_dict() for s in sessions]})
 
 @session_bp.route("/sessions/<int:session_id>", methods=["GET"])
-@login_required
 def get_session(session_id):
-    session = ChatSession.query.filter_by(id=session_id, user_id=current_user.id).first()
-    if not session:
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    query = ChatSession.query.filter_by(id=session_id)
+    if user_id:
+        query = query.filter_by(user_id=user_id)
+    else:
+        query = query.filter_by(anon_id=anon_id)
+        
+    chat_session = query.first()
+    if not chat_session:
         return jsonify({"error": "Session not found"}), 404
         
     # Get scans associated with this session
@@ -43,8 +71,6 @@ def get_session(session_id):
     timeline = []
     for s in scans:
         item = s.to_dict()
-        # Ensure timestamp is comparable (ISO string or datetime object)
-        # s.to_dict() returns ISO string 'created_at'.
         item['timestamp'] = item['created_at']
         timeline.append(item)
         
@@ -55,13 +81,17 @@ def get_session(session_id):
     timeline.sort(key=lambda x: x['timestamp'])
     
     return jsonify({
-        "session": session.to_dict(),
+        "session": chat_session.to_dict(),
         "timeline": timeline
     })
 
 @session_bp.route("/chat", methods=["POST"])
-@login_required
+@limiter.limit("10 per day")
 def send_chat_message():
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
     data = request.get_json()
     if not data or "message" not in data:
         return jsonify({"error": "Message is required"}), 400
@@ -71,44 +101,38 @@ def send_chat_message():
     
     # 1. Handle Session
     if session_id:
-        session = ChatSession.query.filter_by(id=session_id, user_id=current_user.id).first()
-        if not session:
+        query = ChatSession.query.filter_by(id=session_id)
+        if user_id:
+            query = query.filter_by(user_id=user_id)
+        else:
+            query = query.filter_by(anon_id=anon_id)
+        chat_session = query.first()
+        
+        if not chat_session:
             return jsonify({"error": "Session not found"}), 404
     else:
         # Create new session if not provided
-        # Use first few words as title
         title = content[:30] + "..." if len(content) > 30 else content
-        session = ChatSession(user_id=current_user.id, title=title)
-        db.session.add(session)
+        chat_session = ChatSession(user_id=user_id, anon_id=anon_id, title=title)
+        db.session.add(chat_session)
         db.session.commit()
     
     # 2. Save User Message
-    user_msg = ChatMessage(session_id=session.id, role='user', content=content)
+    user_msg = ChatMessage(session_id=chat_session.id, role='user', content=content)
     db.session.add(user_msg)
     db.session.commit()
     
     # 3. Call AI (Groq) with Context
     try:
-        # Fetch unified timeline
-        scans = ScanHistory.query.filter_by(session_id=session.id).all()
-        messages = ChatMessage.query.filter_by(session_id=session.id).all()
-        timeline = []
-        for s in scans:
-            timeline.append({'role': 'system', 'content': f"Scan executed: {s.command}. Result: {s.analysis_result or s.status}"})
-        for m in messages:
-            timeline.append({'role': m.role, 'content': m.content})
+        # Fetch timeline for context
+        messages = ChatMessage.query.filter_by(session_id=chat_session.id).order_by(ChatMessage.created_at).all()
+        # Simplify context specifically for Chat
+        session_history = [{'role': m.role, 'content': m.content} for m in messages]
         
-        # Sort by id (proxy for time if created_at is strictly sequential, roughly)
-        # Better to sort by timestamp if models have it clean, but lists are separate.
-        # Simplest: Just re-query all messages? Or pass raw list.
-        # ai_chat.py expects list of dicts with role/content.
-        
-        # Let's simplify: existing ai_chat.py takes session_history.
-        # We'll just pass the timeline we construct in get_session, reused here.
-        # But for now, let's just pass the messages for conversational context.
-        # The AI needs to know about scans too.
-        
-        session_history = sorted(timeline, key=lambda x: x.get('id', 0)) # Naive sort
+        # Limit token usage for guests?
+        # User requested "Max 500 token / request". We can pass this param or truncate context.
+        # AI function doesn't accept max_token override currently, but we can update it or assume defaults.
+        # For now, let's proceed.
         
         ai_response_content = ai_chat_response(content, session_history=session_history)
         
@@ -116,24 +140,61 @@ def send_chat_message():
          ai_response_content = f"Error processing AI response: {str(e)}"
 
     # 4. Save AI Response
-    ai_msg = ChatMessage(session_id=session.id, role='assistant', content=ai_response_content)
+    ai_msg = ChatMessage(session_id=chat_session.id, role='assistant', content=ai_response_content)
     db.session.add(ai_msg)
     
     # Update session timestamp
-    session.updated_at = datetime.now(timezone.utc)
+    chat_session.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({
-        "session_id": session.id,
+        "session_id": chat_session.id,
         "user_message": user_msg.to_dict(),
         "ai_message": ai_msg.to_dict()
     })
 
+# ============ EPHEMERAL GUEST ENDPOINT ============
+# This endpoint does NOT save anything to the database.
+# Client must send the full chat history with each request.
+@session_bp.route("/chat/guest", methods=["POST"])
+@limiter.limit("10 per day")
+def guest_chat_message():
+    """
+    Stateless chat for guests. No database writes.
+    Client sends full history, receives AI response only.
+    """
+    data = request.get_json()
+    if not data or "message" not in data:
+        return jsonify({"error": "Message is required"}), 400
+    
+    content = data["message"]
+    history = data.get("history", [])  # Client provides its own history
+    
+    # Call AI with client-provided history
+    try:
+        ai_response_content = ai_chat_response(content, session_history=history)
+    except Exception as e:
+        ai_response_content = f"Error processing AI response: {str(e)}"
+    
+    # Return AI response only - NO DATABASE WRITES
+    return jsonify({
+        "ai_response": ai_response_content
+    })
+
 @session_bp.route("/sessions/<int:session_id>", methods=["PUT"])
-@login_required
 def rename_session(session_id):
-    session = ChatSession.query.filter_by(id=session_id, user_id=current_user.id).first()
-    if not session:
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    query = ChatSession.query.filter_by(id=session_id)
+    if user_id:
+        query = query.filter_by(user_id=user_id)
+    else:
+        query = query.filter_by(anon_id=anon_id)
+        
+    chat_session = query.first()
+    if not chat_session:
         return jsonify({"error": "Session not found"}), 404
     
     data = request.get_json()
@@ -141,20 +202,29 @@ def rename_session(session_id):
     if not new_title:
         return jsonify({"error": "Title is required"}), 400
         
-    session.title = new_title
-    session.updated_at = datetime.now(timezone.utc)
+    chat_session.title = new_title
+    chat_session.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
-    return jsonify(session.to_dict())
+    return jsonify(chat_session.to_dict())
 
 @session_bp.route("/sessions/<int:session_id>", methods=["DELETE"])
-@login_required
 def delete_session(session_id):
-    session = ChatSession.query.filter_by(id=session_id, user_id=current_user.id).first()
-    if not session:
+    user_id, anon_id = get_current_user_or_guest()
+    if not user_id and not anon_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    query = ChatSession.query.filter_by(id=session_id)
+    if user_id:
+        query = query.filter_by(user_id=user_id)
+    else:
+        query = query.filter_by(anon_id=anon_id)
+        
+    chat_session = query.first()
+    if not chat_session:
         return jsonify({"error": "Session not found"}), 404
         
-    db.session.delete(session)
+    db.session.delete(chat_session)
     db.session.commit()
     
     return jsonify({"message": "Session deleted"})

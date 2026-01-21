@@ -10,53 +10,55 @@ class NiktoAnalyzer(BaseAnalyzer):
         execution = data.get("execution", {})
         stdout = execution.get("stdout", "")
         stderr = execution.get("stderr", "")
+        target = data.get("target", "Unknown")
         
         # Coba extract structured data
         structured = extract_structured_data("nikto", stdout, stderr)
         
-        # Jika berhasil parse, gunakan structured data
         if structured.get("parsed"):
-            structured_summary = f"""
-Parsed Nikto Data:
-- Target: {structured.get('target', {}).get('targetip', 'N/A')}
-- Items found: {len(structured.get('items', []))}
-- Statistics: {json.dumps(structured.get('statistics', {}), indent=2)}
-
-Vulnerabilities/Issues:
-{json.dumps(structured.get('items', []), indent=2)}
-"""
-            nikto_data = structured_summary
+            nikto_data = json.dumps(structured, indent=2)
         else:
-            nikto_data = f"Stdout: {stdout}\n\nStderr: {stderr}"
+            nikto_data = self.truncate_text(f"Stdout: {stdout}\n\nStderr: {stderr}")
 
         return f"""
-You are a web security analyst. Your goal is to analyze the Nikto scan results and provide a clear, concise, and actionable security report.
+You are a Web Security Expert. Analyze the Nikto scan results with a critical and thorough eye.
 
-Return ONLY valid JSON.
-DO NOT include explanations outside the JSON.
-DO NOT use markdown formatting (e.g., ```json).
+Target: {target}
+Nikto Output:
+{nikto_data}
+
+TASK:
+Generate a high-quality, professional web application security analysis in JSON format.
+You must be CRITICAL, DETAILED, and provide STRATEGIC next steps.
 
 JSON schema:
 {{
-  "risk": "info|low|medium|high|critical",
-  "summary": "A comprehensive summary of the key findings, potential vulnerabilities, and the overall security posture based on the Nikto output. This summary should clearly state the most important security implications.",
-  "findings": [
-    {{
-      "id": "string (Nikto ID)",
-      "description": "string (Description of vulnerability)",
-      "uri": "string (Affected URI)",
-      "severity": "low|medium|high|critical",
-      "recommendation": "string (Specific recommendation to fix)"
-    }}
-  ],
-  "recommendations": [
-    "string (general high-level recommendations, e.g., 'Ensure all web server headers are properly configured', 'Regularly patch web applications')",
-    "string"
-  ]
+  "metadata": {{
+    "target": "{target}",
+    "confidence": "Low|Medium|High"
+  }},
+  "analysis": "In-depth technical analysis of the findings. Explain the vulnerabilities found, their context in a modern web environment, and how they contribute to the overall attack surface.",
+  "issue": {{
+    "type": "Primary web vulnerability (e.g. CSRF, XSS, Outdated Software, Security Header Missing)",
+    "severity": "info|low|medium|high|critical",
+    "endpoint": "Affected URI/Path",
+    "parameter": "Specific header or field if applicable",
+    "owasp": "Relevant OWASP Top 10 category"
+  }},
+  "evidence": {{
+    "payload": "N/A or specific test URI used",
+    "response_behavior": "Server response or behavior confirming the vulnerability"
+  }},
+  "impact": "Detailed assessment of the risk to the business and data integrity.",
+  "recommendations": ["List of specific, actionable mitigation steps with priority"],
+  "next_actions": ["Strategic next steps for a penetration tester to validate or exploit further"],
+  "summary": "One-sentence executive summary of the finding."
 }}
 
-Nikto output:
-{nikto_data}
-
-Based on the Nikto output provided, generate the JSON response. Pay close attention to common web server misconfigurations, missing security headers, known vulnerabilities, and potential information leaks. If specific CVEs or detailed recommendations are not immediately apparent from the Nikto output alone, provide general security best practices relevant to the identified issues.
+RULES:
+- Return ONLY valid JSON.
+- **Tool Self-Awareness**: You ONLY have access to these internal tools: `nmap`, `gobuster`, `nikto`, `sqlmap`. NEVER suggest Burp Suite or external software.
+- **Strategic Chaining**: In 'next_actions', suggest `sqlmap` if parameters or injection hints are found.
+- Focus on the most impactful vulnerabilities first.
+- Be precise about versions and CVEs if they appear in the output.
 """

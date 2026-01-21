@@ -35,32 +35,32 @@
         <section id="loginSection" class="auth-section active">
             <div class="hero-section">
                 <h1 class="title">Hi! <br> Welcome</h1>
-                <p class="subtitle">I'm waiting for you, please enter your detail!</p>
+                <p class="subtitle">Securely sign in with your Google account to access AIVAST.</p>
             </div>
 
-            <form class="auth-form" action="{{ url_for('auth.login') }}" method="POST">
-                <div class="input-group">
-                    <input type="email" id="LoginInput" name="email" placeholder="Email Address" required>
+            <div class="auth-options" style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+                <a href="{{ url_for('auth.google_login') }}" class="btn-primary"
+                    style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="fab fa-google"></i> Login with Google
+                </a>
+
+                <div class="divider"
+                    style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--subtitle-color);">
+                    <span style="flex: 1; height: 1px; background: var(--border-color);"></span>
+                    <span style="padding: 0 10px; font-size: 0.8em;">OR</span>
+                    <span style="flex: 1; height: 1px; background: var(--border-color);"></span>
                 </div>
 
-                <div class="input-group password-group">
-                    <input type="password" name="password" placeholder="Password" required>
-                    <i class="fa-regular fa-eye toggle-password"></i>
+                <div class="guest-option" style="text-align: center;">
+                    <button type="button" class="link-text" onclick="window.location.href='/chat-page';"
+                        style="background:none; border:none; font-size:1em; cursor:pointer; color: var(--link-color);">Continue
+                        as Guest</button>
                 </div>
+            </div>
 
-                <div class="options-row">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember"> Remember Me
-                    </label>
-                    <a href="{{ url_for('main.index') }}" class="link-text">Forgot Password?</a>
-                    <!-- Placeholder for now -->
-                </div>
-
-                <button type="submit" class="btn-primary">Log In</button>
-            </form>
-
-            <div class="footer-text">
-                <p>Don't have an account? <a href="{{ url_for('auth.signup_page') }}">Sign Up</a></p>
+            <div class="footer-text" style="margin-top: 40px;">
+                <p style="font-size: 0.8em; color: var(--subtitle-color);">By logging in, you agree to our Terms of
+                    Service and Privacy Policy.</p>
             </div>
         </section>
     </div>

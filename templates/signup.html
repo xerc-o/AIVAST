@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIVAST - Sign Up</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 </head>
+
 <body>
 
     <div class="blur-glow top-left"></div>
     <div class="blur-glow bottom-right"></div>
 
     <div class="main-card">
-        
+
         <header class="header-logo">
             <div class="brand-info">
                 <span class="brand-name">AIVAST</span>
@@ -30,25 +33,30 @@
         <section id="signupSection" class="auth-section active">
             <div class="hero-section small-hero">
                 <h1 class="title">Create Account</h1>
-                <p class="subtitle">Join us and start your journey!</p>
+                <p class="subtitle">Join AIVAST using your Google account.</p>
             </div>
 
-            <form class="auth-form" action="{{ url_for('auth.signup') }}" method="POST">
-                <div class="input-group">
-                    <input type="text" name="username" placeholder="Username" required>
-                </div>
-                <div class="input-group">
-                    <input type="email" name="email" placeholder="Email Address" required>
-                </div>
-                <div class="input-group password-group">
-                    <input type="password" name="password" placeholder="Password" required>
-                    <i class="fa-regular fa-eye toggle-password"></i>
+            <div class="auth-options" style="margin-top: 30px; display: flex; flex-direction: column; gap: 15px;">
+                <a href="{{ url_for('auth.google_login') }}" class="btn-primary"
+                    style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="fab fa-google"></i> Sign Up with Google
+                </a>
+
+                <div class="divider"
+                    style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--subtitle-color);">
+                    <span style="flex: 1; height: 1px; background: var(--border-color);"></span>
+                    <span style="padding: 0 10px; font-size: 0.8em;">OR</span>
+                    <span style="flex: 1; height: 1px; background: var(--border-color);"></span>
                 </div>
 
-                <button type="submit" class="btn-primary">Sign Up</button>
-            </form>
+                <div class="guest-option" style="text-align: center;">
+                    <button type="button" class="link-text" onclick="window.location.href='/chat-page';"
+                        style="background:none; border:none; font-size:1em; cursor:pointer; color: var(--link-color);">Continue
+                        as Guest</button>
+                </div>
+            </div>
 
-            <div class="footer-text">
+            <div class="footer-text" style="margin-top: 40px;">
                 <p>Already have an account? <a href="{{ url_for('main.index') }}">Log In</a></p>
             </div>
         </section>
@@ -100,7 +108,7 @@
             }
         });
     </script>
-    
+
 </body>
 
 </html>

@@ -1,264 +1,112 @@
-<h2>
-  AIVAST
-</h2>
-<h5>
-  AI Powered Assesment and Scanning Tool
-</h5>
+# AIVAST - AI-Powered Assessment and Scanning Tool
 
-
-<body>
-AIVAST adalah tool scanning keamanan berbasis AI yang menggunakan Groq LLM untuk menganalisis hasil scanning dari nmap dan nikto secara otomatis.
+AIVAST is a security scanning tool that integrates traditional security tools like `nmap` and `nikto` with the power of LLMs (Groq) for automated results analysis.
 
 ## 🚀 Features
 
-- 🤖 **AI-Powered Analysis**: Menggunakan Groq LLM untuk analisis hasil scan
-- 🔍 **Multiple Tools**: Support untuk nmap dan nikto
-- 📊 **History Tracking**: Menyimpan semua scan history ke database
-- 🛡️ **Security Controls**: Whitelist tools, blacklist arguments, timeout protection
-- 📝 **RESTful API**: Clean API endpoints untuk integrasi
-- 🔎 **Advanced Filtering**: Filter by tool, risk level, pagination
+- 🤖 **AI-Powered Analysis**: Uses Groq LLM to automatically analyze scan results.
+- 🔍 **Tool Integration**: Built-in support for `nmap` and `nikto`.
+- 📊 **History Tracking**: Saves all scan results and analyses to a SQLite database.
+- 🛡️ **Security Controls**: Argument blacklisting, whitelist-only tool execution, and timeout protection.
+- 📝 **RESTful API**: Clean API endpoints for integration with other tools.
+- 🔎 **Advanced Filtering**: Filter scan history by tool type, risk level, and pagination.
 
 ## 📋 Requirements
 
 - Python 3.8+
-- nmap (installed on system)
-- nikto (installed on system)
+- `nmap` (installed on system)
+- `nikto` (installed on system)
 - Groq API Key
 
 ## 🔧 Installation
 
-1. Clone repository:sh
-git clone <repository-url>
-cd AIVAST2. Create virtual environment:ash
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# atau
-venv\Scripts\activate  # Windows3. Install dependencies:
-pip install -r requirements.txt4. Setup environment variables:
-cp .env.example .env
-# Edit .env dan masukkan GROQ_API_KEY5. Initialize database (otomatis saat first run)
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd AIVAST_CLEAN
+   ```
+
+2. **Create and activate a virtual environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   # Recommended: install in editable mode to handle imports correctly
+   pip install -e .
+   ```
+
+4. **Setup environment variables:**
+   Copy `.env.example` to `.env` and configure your keys:
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your GROQ_API_KEY
+   ```
 
 ## 🎯 Usage
 
-### Run Flask App
-python src/app.pyServer akan berjalan di `http://127.0.0.1:5000`
+### Start the Application
+Since the source code is in the `src` directory, you can run the app using:
+```bash
+export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+python src/app.py
+```
+Or if you installed it in editable mode:
+```bash
+flask run
+```
+The server will run at `http://127.0.0.1:5000`.
 
-### Test dengan Python Script
-python test.py
-### Test dengan cURL
+### API Endpoints
 
 #### Health Check
-curl http://127.0.0.1:5000/#### Run Scan
+`GET /`
+```bash
+curl http://127.0.0.1:5000/
+```
+
+#### Start a Scan
+`POST /scan`
+```bash
 curl -X POST http://127.0.0.1:5000/scan \
   -H "Content-Type: application/json" \
-  -d '{"target": "https://example.com"}'#### List All Scans
-curl http://127.0.0.1:5000/scans#### Filter Scans
-# By tool
-curl http://127.0.0.1:5000/scans?tool=nikto
+  -d '{"target": "https://example.com"}'
+```
 
-# By risk level
-curl http://127.0.0.1:5000/scans?risk=medium
+#### List Scans
+`GET /scans`
+```bash
+curl http://127.0.0.1:5000/scans
+```
+*Optional parameters: `tool`, `risk`, `page`, `per_page`*
 
-# Pagination
-curl http://127.0.0.1:5000/scans?page=1&per_page=10
 #### Get Scan Detail
-curl http://127.0.0.1:5000/scans/1#### Delete Scan
-curl -X DELETE http://127.0.0.1:5000/scans/1## 📡 API Endpoints
+`GET /scans/<id>`
 
-### `GET /`
-Health check endpoint.
-
-**Response:**
-{
-  "status": "AIVAST running"
-}### `POST /scan`
-Run security scan pada target.
-
-**Request:**son
-{
-  "target": "https://example.com"
-}**Response:**
-{
-  "target": "https://example.com",
-  "tool": "nikto",
-  "command": "nikto -h https://example.com",
-  "execution": {
-    "ok": true,
-    "tool": "nikto",
-    "returncode": 1,
-    "stdout": "...",
-    "stderr": "..."
-  },
-  "analysis": {
-    "risk": "medium",
-    "summary": "...",
-    "issues": [...],
-    "recommendations": [...]
-  }
-}### `GET /scans`
-List semua scan history dengan pagination dan filtering.
-
-**Query Parameters:**
-- `page` (int): Page number (default: 1)
-- `per_page` (int): Items per page (default: 20)
-- `tool` (string): Filter by tool (nmap/nikto)
-- `risk` (string): Filter by risk level (info/low/medium/high)
-
-**Response:**
-{
-  "scans": [...],
-  "total": 10,
-  "page": 1,
-  "per_page": 20,
-  "pages": 1
-}### `GET /scans/<id>`
-Get detail scan tertentu.
-
-### `DELETE /scans/<id>`
-Delete scan tertentu.
+#### Delete Scan
+`DELETE /scans/<id>`
 
 ## 🏗️ Project Structure
-<h5>
-  Create virtual environment
-</h5>
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# atau
-venv\Scripts\activate  # Windows Arguments**: Block arguments berbahaya (--script, -oA, dll)
-- **Timeout Protection**: nmap (180s), nikto (300s)
-- **Output Limit**: Maksimal 20000 karakter per output
 
-## 🛠️ Development
+- `src/`: Main source code
+  - `ai/`: LLM integration and parsing logic
+  - `routes/`: Flask API endpoints
+  - `models/`: Database models
+- `templates/`: HTML templates (if applicable)
+- `static/`: Static assets
+- `tests/`: Project test suite
 
-### Running in Development Mode
-python src/app.py### Production Deployment
-Gunakan gunicorn:
-gunicorn -w 4 -b 0.0.0.0:8000 "src.app:create_app()"## 📝 Environment Variables
+## 🛡️ Security
+AIVAST implements several security measures:
+- **Argument Blacklisting**: Prevents execution of dangerous arguments like `--script` in `nmap`.
+- **Timeout Protection**: `nmap` (180s) and `nikto` (300s) have hard execution limits.
+- **Output Limit**: Results are truncated at 20,000 characters to prevent overflow.
 
-SECRET_KEY=your-secret-key
-GROQ_API_KEY=your-groq-api-key
-DATABASE_URL=sqlite:///AIVAST.db
-FLASK_ENV=development
 ## 🤝 Contributing
-
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
-
-[Your License Here]
-
-## 🙏 Acknowledgments
-
-- Groq for LLM API
-- nmap and nikto projects
-- Flask community
-
-  pip install -r requirements.txtpathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
-    """Setup logger dengan file dan console handler."""
-    
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    
-    # File handler
-    file_handler = logging.FileHandler(LOG_DIR / log_file)
-    file_handler.setLevel(level)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    
-    # Formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-
-  <h5>
-Install dependencies:
-    
-  </h5>
-  pip install -r requirements.txtpathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parents[2]
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-
-def setup_logger(name: str, log_file: str = "aivast.log", level=logging.INFO):
-    """Setup logger dengan file dan console handler."""
-    
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    
-    # File handler
-    file_handler = logging.FileHandler(LOG_DIR / log_file)
-    file_handler.setLevel(level)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    
-    # Formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-    
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    
-    return logger
-  <h5>
-    Setup environment variables
-  </h5>
-
-  cp .env.example .env
-# Edit .env dan masukkan GROQ_API_KEYproduction
-FLASK_ENV=development
-
-# Database
-DATABASE_URL=sqlite:///AIVAST.db
-
-# Groq API
-GROQ_API_KEY=your-groq-api-key-here
-
-<h3>
-  Usage
-</h3>
-<h5>
-  Run Flask App
-</h5>
-python src/app.pycurl -X POST http://127.0.0.1:5000/scan \
-  -H "Content-Type: application/json" \
-  -d '{"target": "scanme.nmap.org"}'
-
-Server akan berjalan di http://127.0.0.1:5000
-
-
-Test dengan cURL
-Health Check
-curl http://127.0.0.1:5000/
-Run Scan
-curl -X POST http://127.0.0.1:5000/scan \  -H "Content-Type: application/json" \  -d '{"target": "https://example.com"}'
-List All Scans
-curl http://127.0.0.1:5000/scans
-Filter Scans
-# By toolcurl http://127.0.0.1:5000/scans?tool=nikto# By risk levelcurl http://127.0.0.1:5000/scans?risk=medium# Paginationcurl http://127.0.0.1:5000/scans?page=1&per_page=10
-Get Scan Detail
-curl http://127.0.0.1:5000/scans/1
-Delete Scan
-
-
-</body>
+This project is licensed under the MIT License.

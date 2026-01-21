@@ -108,7 +108,7 @@ def test_scan_endpoint_success(client):
         assert scan_id is not None
 
         # Verify plan_scan and run_command_async were called
-        mock_plan_scan.assert_called_once_with('example.com', use_ai=True) # use_ai is default True
+        mock_plan_scan.assert_called_once_with('example.com', use_ai=True, tool=None, history='', deep_scan=False)
         mock_run_command_async.assert_called_once_with(mock_plan["command"])
 
         # 4. Poll the status endpoint until completed

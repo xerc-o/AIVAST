@@ -1,44 +1,43 @@
 body.dark-mode {
-    --bg-color: #1a1a2e;
-    /* Dark blue-purple background */
-    --card-bg-color: #16213e;
-    /* Slightly darker card background */
-    --text-color: #e0e0e0;
-    /* Light grey text */
-    --subtitle-color: #b0b0b0;
-    /* Lighter grey subtitle */
-    --border-color: #3e2060;
-    /* Darker border for contrast */
-    --primary-color: #0f3460;
-    /* Dark blue primary color */
+    --bg-color: #030712;
+    /* Ultra-deep midnight blue-black */
+    --card-bg-color: #0f172a;
+    /* Rich slate card background */
+    --text-color: #f1f5f9;
+    /* Crisp white-blue text */
+    --subtitle-color: #64748b;
+    /* Professional slate subtitle */
+    --border-color: #1e293b;
+    /* Subtle slate border */
+    --primary-color: #0ea5e9;
+    /* Premium sky blue accent */
     --primary-text-color: #ffffff;
     /* White text on primary */
-    --link-color: #a7e0ff;
-    /* Light blue link color */
-    --link-hover-color: #7da4cb;
-    /* Slightly darker blue on hover */
-    --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-    /* Pronounced shadow */
-    --blur-bg-1: rgba(30, 60, 90, 0.4);
-    /* Darker blue glow */
-    --blur-bg-2: rgba(50, 80, 110, 0.4);
-    /* Even darker blue glow */
-    --gradient-bg: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-    /* Dark gradient */
-    --bubble-bg: #222e50;
-    --bubble-border: #0f3460;
-    --input-box-bg: #16213e;
-    --input-box-border: #3e2060;
-    --icon-btn-color: #b0b0b0;
-    --primary-color-rgb: 15, 52, 96;
+    --link-color: #38bdf8;
+    /* Vibrant cyan link color */
+    --link-hover-color: #7dd3fc;
+    /* Lighter cyan on hover */
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    /* Deeper premium shadow */
+    --blur-bg-1: rgba(14, 165, 233, 0.1);
+    /* Subtle blue atmospheric glow */
+    --blur-bg-2: rgba(2, 132, 199, 0.05);
+    --gradient-bg: radial-gradient(circle at top left, #0f172a 0%, #030712 100%);
+    /* Sophisticated radial gradient */
+    --bubble-bg: #1e293b;
+    --bubble-border: #334155;
+    --input-box-bg: #0f172a;
+    --input-box-border: #1e293b;
+    --icon-btn-color: #64748b;
+    --primary-color-rgb: 14, 165, 233;
     /* RGB for dark mode --primary-color */
 
     /* Chat specific */
-    --sidebar-bg: #16213e;
-    --history-item-bg: #222e50;
-    --history-item-hover-bg: #0f3460;
+    --sidebar-bg: #030712;
+    --history-item-bg: #0f172a;
+    --history-item-hover-bg: #1e293b;
 
     /* Better contrast */
-    --bold-text-color: #64b5f6;
-    /* Lighter blue for strong text in dark mode */
+    --bold-text-color: #38bdf8;
+    /* Vibrant cyan for technical emphasis */
 }

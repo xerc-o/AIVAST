@@ -11,35 +11,56 @@ class BaseAnalyzer:
     def build_prompt(self, data: dict) -> str:
         raise NotImplementedError
 
+    def truncate_text(self, text: str, max_chars: int = 40000) -> str:
+        """Truncates text to prevent LLM context overflow."""
+        if not text: return ""
+        if len(text) <= max_chars: return text
+        return text[:max_chars] + "\n\n[... OUTPUT TRUNCATED DUE TO LENGTH ...]"
+
+    def _ensure_schema(self, data: dict, target: str = "Unknown") -> dict:
+        """Ensures the analysis dict matches the expected frontend schema."""
+        schema = {
+            "metadata": {"target": target, "confidence": "Medium"},
+            "analysis": "No analysis details provided.",
+            "issue": {"type": "None identified", "severity": "info", "endpoint": "N/A", "parameter": "N/A", "owasp": "N/A"},
+            "evidence": {"payload": "N/A", "response_behavior": "N/A"},
+            "impact": "No significant impact identified.",
+            "recommendations": [],
+            "next_actions": [],
+            "summary": "Analysis completed with no critical findings."
+        }
+        
+        # Merge AI data into schema
+        if not isinstance(data, dict): return schema
+        
+        for key, value in schema.items():
+            if key not in data:
+                data[key] = value
+            elif isinstance(value, dict) and isinstance(data[key], dict):
+                # Shallow merge for nested dicts (metadata, issue, evidence)
+                for subkey, subval in value.items():
+                    if subkey not in data[key]:
+                        data[key][subkey] = subval
+                        
+        return data
+
     def analyze(self, data: dict) -> dict:
         """
         Analyze execution data menggunakan LLM.
-        
-        Returns:
-            dict: Parsed JSON dari LLM response, atau dict dengan error jika parsing gagal
         """
         prompt = self.build_prompt(data)
-        logger.debug(f"LLM Prompt: {prompt}") # Log the prompt
+        target = data.get("target", "Unknown")
         
         try:
-            # Call LLM
             raw_response = call_groq(prompt)
-            logger.debug(f"LLM Raw Response: {raw_response[:500]}") # Log raw response
             
-            # Parse JSON response
             if isinstance(raw_response, str):
                 parsed = safe_parse_json(raw_response)
-                logger.debug(f"LLM Parsed Response: {parsed}") # Log parsed response
-                return parsed
+                # Ensure we have the full schema
+                return self._ensure_schema(parsed, target=target)
             else:
-                return {
-                    "risk": "unknown",
-                    "error": "Unexpected response type from LLM (expected string)",
-                    "raw": str(raw_response)
-                }
+                return self._ensure_schema({"error": "Unexpected LLM response type"}, target=target)
+                
         except Exception as e:
-            logger.error(f"LLM call or parsing failed: {str(e)}", exc_info=True) # Log errors
-            return {
-                "risk": "unknown",
-                "error": f"LLM call failed: {str(e)}"
-            }
+            logger.error(f"LLM call or parsing failed: {str(e)}", exc_info=True)
+            return self._ensure_schema({"error": f"LLM failure: {str(e)}"}, target=target)

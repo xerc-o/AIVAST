@@ -9,7 +9,6 @@ def index():
     return render_template("index.html")
 
 @main_bp.route("/chat-page")
-@login_required
 def chat_page():
     return render_template("chat.html")
 

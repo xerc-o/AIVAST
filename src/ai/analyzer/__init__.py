@@ -1,25 +1,23 @@
 from .nmap import NmapAnalyzer
 from .nikto import NiktoAnalyzer
+from .gobuster import GobusterAnalyzer
+from .sqlmap import SQLMapAnalyzer
 
 _ANALYZERS = {
     "nmap": NmapAnalyzer(),
     "nikto": NiktoAnalyzer(),
+    "gobuster": GobusterAnalyzer(),
+    "sqlmap": SQLMapAnalyzer(),
 }
 
-def analyze_output(tool: str, execution_data: dict) -> dict:
+def analyze_output(tool: str, execution_data: dict, target: str = None) -> dict:
     """
     Analyze output dari tool execution menggunakan AI.
     
     Args:
-        tool: Nama tool ("nmap" atau "nikto")
-        execution_data: Dict dari run_command() dengan struktur:
-            {
-                "ok": bool,
-                "tool": str,
-                "returncode": int,
-                "stdout": str,
-                "stderr": str
-            }
+        tool: Nama tool
+        execution_data: Dict dari run_command()
+        target: Target address (IP/Domain/URL)
     
     Returns:
         dict: Analysis result dari LLM (sudah parsed JSON)
@@ -47,7 +45,8 @@ def analyze_output(tool: str, execution_data: dict) -> dict:
     try:
         result = analyzer.analyze({
             "tool": tool,
-            "execution": execution_data
+            "execution": execution_data,
+            "target": target
         })
         return result
     except Exception as e:

@@ -12,6 +12,11 @@ from flask.cli import with_appcontext
 import click
 import logging # Import logging module
 
+@click.group()
+def create_db_command():
+    """Dummy command to satisfy setup.py entrypoint during migrations."""
+    pass
+
 # Configure logging at the beginning
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -48,12 +53,37 @@ def create_app(config_overrides=None):
     db.init_app(app)
     
     from flask_migrate import Migrate
-    migrate = Migrate(app, db)
+    migrate = Migrate(app, db, directory=BASE_DIR / 'migrations')
 
     # Setup Flask-Login
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'main.index' # Arahkan ke halaman login jika belum login
+
+    # Setup Flask-Limiter
+    from extensions import limiter, oauth
+    limiter.init_app(app)
+    oauth.init_app(app)
+
+    # Register Google OAuth
+    oauth.register(
+        name='google',
+        client_id=os.getenv('GOOGLE_CLIENT_ID'),
+        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={
+            'scope': 'openid email profile'
+        }
+    )
+
+    # Guest Session Management
+    from flask import session
+    import uuid
+
+    @app.before_request
+    def assign_anon_id():
+        if "anon_id" not in session:
+            session["anon_id"] = str(uuid.uuid4())
 
     @login_manager.user_loader
     def load_user(user_id):

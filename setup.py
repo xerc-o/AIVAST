@@ -20,9 +20,9 @@ setup(
         'python-libnmap',
         'beautifulsoup4',
     ],
-    entry_points={
-        'flask.commands': [
-            'create-db=app:create_db_command',
-        ],
-    },
+#    entry_points={
+#        'flask.commands': [
+#            'create-db=app:create_db_command',
+#        ],
+#    },
 )

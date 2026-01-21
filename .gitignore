@@ -1,66 +1,54 @@
-##################################
-# PYTHON BYTECODE / CACHE
-##################################
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-##################################
-# VIRTUAL ENVIRONMENT
-##################################
-venv/
-.venv/
-env/
-ENV/
-
-##################################
-# ENV / SECRETS (ALL VARIANTS)
-##################################
+# Environments
 .env
-.env.*
-*.env
-*.key
-*.pem
-*.crt
-*.pfx
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-##################################
-# INSTANCE / RUNTIME DATA (FLASK)
-##################################
-instance/
+# Database
 *.db
 *.sqlite
-*.sqlite3
+instance/
 
-##################################
-# LOGS / TEMP FILES
-##################################
-*.log
-logs/
-tmp/
-.cache/
-
-##################################
-# BUILD / PACKAGE ARTIFACTS
-##################################
-dist/
-build/
-*.egg-info/
-.eggs/
-
-##################################
-# TEST / COVERAGE
-##################################
-.coverage
-coverage/
-htmlcov/
-
-##################################
-# OS / EDITOR (OPTIONAL BUT SAFE)
-##################################
-.DS_Store
-Thumbs.db
+# IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# Project specific
+logs/
+*.log
+gobuster_output.txt
+data/
+PBL_AI2/
+Shodiq/
+AIVAST_CLEAN/
+.pytest_cache/
+.coverage
+htmlcov/

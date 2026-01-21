@@ -35,8 +35,14 @@
         <ul class="history-list" id="historyList">
             <!-- Sessions will be loaded here -->
         </ul>
+        {% if current_user.is_authenticated %}
         <button onclick="logout()" class="logout-btn"
             style="width:100%; padding:12px; background:#2d2d39; color:white; border:none; border-radius:10px; cursor:pointer;">Logout</button>
+        {% else %}
+        <button onclick="window.location.href='/'" class="logout-btn"
+            style="width:100%; padding:12px; background:var(--primary-color); color:white; border:none; border-radius:10px; cursor:pointer;">Login
+            / Signup</button>
+        {% endif %}
     </div>
 
     <header>
@@ -58,29 +64,101 @@
 
             <div class="welcome-screen" id="welcomeScreen">
                 <img src="{{ url_for('static', filename='img/chatbot_icon.png') }}" class="big-robot" alt="Robot AI">
+                {% if current_user.is_authenticated %}
                 <p class="welcome-text">Welcome {{ current_user.username }}, ready to dive?</p>
+                {% else %}
+                <p class="welcome-text">Welcome Guest, ready to dive?</p>
+                {% endif %}
             </div>
 
         </div>
+    </div>
 
-        <div class="input-area">
-            <div class="input-box">
-                <div id="hacker-mode-btn" class="icon-btn hacker-icon-mask" title="Connect to Tools"></div>
-                <!-- Tool Selection Popover -->
-                <div id="tool-menu" class="tool-menu hidden">
-                    <div class="tool-option" data-tool="nmap">Nmap</div>
-                    <div class="tool-option" data-tool="nikto">Nikto</div>
+    <div class="input-area">
+        <div class="input-box">
+            <div id="hacker-mode-btn" class="icon-btn hacker-icon-mask" title="Connect to Tools"></div>
+            <!-- Tool Selection Popover -->
+            <div id="tool-menu" class="tool-menu hidden">
+                <div class="tool-option" data-tool="nmap">
+                    Nmap <i class="fa-regular fa-circle-question info-icon" data-info="nmap"></i>
                 </div>
+                <div class="tool-option" data-tool="nikto">
+                    Nikto <i class="fa-regular fa-circle-question info-icon" data-info="nikto"></i>
+                </div>
+                <div class="tool-option" data-tool="gobuster">
+                    Gobuster <i class="fa-regular fa-circle-question info-icon" data-info="gobuster"></i>
+                </div>
+                <div class="tool-option" data-tool="sqlmap">
+                    SQLMap <i class="fa-regular fa-circle-question info-icon" data-info="sqlmap"></i>
+                </div>
+                <hr style="border: 0.5px solid #444; margin: 5px 0;">
+                <div class="tool-option" id="deep-scan-toggle"
+                    style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="deep-scan-label">
+                        <i class="fa-solid fa-bolt-lightning" style="margin-right: 5px; color: #fbbf24;"></i>
+                        Deep Scan
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-regular fa-circle-question info-icon" data-info="deepscan"></i>
+                        <label class="premium-switch">
+                            <input type="checkbox" id="deep-scan-checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-                <div id="tool-badge-container"></div> <!-- Container for dynamic badge -->
-                <input type="text" id="msgInput" placeholder="Message AIVAST...">
-                <i class="fa-solid fa-paper-plane icon-btn" id="sendBtn"></i>
+            <!-- Tool Info Popover -->
+            <div id="info-popover" class="info-popover hidden">
+                <div class="info-header">
+                    <span id="info-title">Tool Info</span>
+                    <i class="fa-solid fa-xmark info-close"></i>
+                </div>
+                <div id="info-content" class="info-content"></div>
+            </div>
+
+            <!-- Deep Scan EXCLUSIVE Centered Overlay -->
+            <div id="deep-scan-overlay" class="deep-info-overlay">
+                <h2>⚡ Deep Scan Engine v2.0</h2>
+                <p>
+                    AIVAST Deep Scan Mode is an advanced autonomous orchestration layer designed for full-spectrum
+                    technical audits.
+                    It moves beyond standard pattern matching by implementing the <b>Complete Cybersecurity Kill
+                        Chain</b>:
+                    moving from high-intensity <i>active reconnaissance</i> and <i>directory brute-forcing</i> to
+                    complex
+                    <i>vulnerability assessments</i> and <i>automated exploitation</i>.
+                    <br><br>
+                    By leveraging deep pattern recognition and cross-tool data correlation, Deep Scan identifies logical
+                    vulnerabilities, service misconfigurations, and complex injection vectors that standard probes
+                    overlook.
+                    This mode is optimized for critical path discovery and maximum attack surface exposure.
+                </p>
+                <button class="close-overlay" onclick="closeDeepOverlay()">Acknowledge</button>
+            </div>
+
+            <div id="tool-badge-container"></div> <!-- Container for dynamic badge -->
+            <input type="text" id="msgInput" placeholder="Message AIVAST...">
+            <div id="wordlist-toggle-btn" class="icon-btn hidden" title="Add Custom Wordlist"
+                style="margin-right: 10px;">
+                <i class="fa-solid fa-file-code"></i>
+            </div>
+            <i class="fa-solid fa-paper-plane icon-btn" id="sendBtn"></i>
+        </div>
+        <div id="wordlist-input-container" class="wordlist-input-container hidden">
+            <textarea id="customWordlist" placeholder="Paste your wordlist here (one item per line)..."></textarea>
+            <div class="wordlist-footer">
+                <span id="wordlist-status">Default wordlist will be used.</span>
+                <button class="small-btn" onclick="toggleWordlistInput()">Close</button>
             </div>
         </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+        // Guest mode detection
+        const IS_GUEST = {% if current_user.is_authenticated %}false{% else %} true{% endif %};
+
         const themeToggle = document.getElementById('theme-toggle');
         const body = document.body;
         const themeIcon = themeToggle.querySelector('i');

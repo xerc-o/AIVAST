@@ -1,5 +1,6 @@
 from typing import Dict
 from .llm.groq import call_groq
+from .analyzer.parser import safe_parse_json
 import json
 import shlex
 
@@ -49,84 +50,81 @@ def plan_scan_rule_based(target: str, forced_tool: str = None) -> Dict[str, str]
 # ==========================================================
 # AI PLANNER (IMPLEMENTASI LENGKAP)
 # ==========================================================
-def plan_scan_ai(target: str, forced_tool: str = None) -> Dict[str, str]:
+def plan_scan_ai(target: str, forced_tool: str = None, history: str = None, deep_scan: bool = False) -> Dict[str, str]:
     """
     AI-powered planner yang menggunakan LLM untuk menentukan tool terbaik.
+    Dapat beradaptasi berdasarkan history scan sebelumnya.
     """
-    
-    # If forced_tool is provided, we can skip AI or guide it to just generate params?
-    # For now, let's just force the tool in the prompt to ensure correct command generation for that tool.
     
     tool_instruction = ""
     if forced_tool:
         tool_instruction = f"User has explicitly selected {forced_tool}. YOU MUST USE {forced_tool}."
 
-    prompt = f"""You are a cybersecurity expert. Given a target, determine the best scanning tool and command.
+    scan_mode = "Deep & Comprehensive" if deep_scan else "Standard / Adaptive"
+
+    prompt = f"""You are a Lead Cybersecurity Penetration Tester. Your goal is to plan an effective scanning strategy.
+Mode: {scan_mode}
 {tool_instruction}
 
 Target: {target}
 
-Return ONLY valid JSON with this exact schema (no markdown, no explanations, no code blocks):
+PREVIOUS SCAN CONTEXT (if any):
+{history if history else "No previous history for this target."}
+
+TASK:
+1. Select the best tool from the available list.
+2. Generate the exact command string. 
+3. Provide a 'rationale' explaining why this tool and these specific flags were chosen.
+
+AVAILABLE TOOLS:
+- nmap: Network scanner. Use for IPs/Hostnames. Standard: `nmap -sV -T4 -oX - [target]`. Aggressive: `nmap -A -T4 -oX - [target]`.
+- nikto: Web vulnerability scanner. Use for http/https. Command: `nikto -h [target]`.
+- gobuster: Directory/File brute-forcing. Use for web targets. Command: `gobuster dir -u [target] -w data/wordlists/default_common.txt`.
+- sqlmap: Automated SQL injection discovery. Use if target likely has parameters. Command: `sqlmap -u [target] --batch --random-agent`. (ALWAYS use --batch for automated mode).
+
+ADAPTIVITY RULES:
+- If MODE is 'Deep & Comprehensive', choose the most aggressive flags.
+- If PREVIOUS CONTEXT shows a tool failed or results were sparse, CHOOSE A DIFFERENT TOOL or DIFFERENT FLAGS to find vulnerabilities.
+- If target is 'alot' (difficult/stubborn), use stealthier or more exhaustive options.
+
+Return ONLY valid JSON (no markdown):
 {{
-  "tool": "nmap|nikto",
+  "tool": "tool_name",
   "command": "full command string",
-  "reason": "brief explanation"
+  "rationale": "Expert explanation of why this was chosen and how it adapts to the target."
 }}
-
-Available tools:
-- nmap: Network port and service scanner. Use for IP addresses, hostnames, or when you need to discover open ports and services.
-- nikto: Web vulnerability scanner. Use ONLY for http:// or https:// URLs.
-
-Rules:
-- If target starts with http:// or https://, use nikto
-- If target is IP address or hostname (without http/https), use nmap
-- For nmap, use: "nmap -sV -T4 -oX - [target]"
-- For nikto, use: "nikto -h [target]"
-- IF USER SELECTED A TOOL, IGNORE DEFAULT RULES AND USE THAT TOOL.
-
-Target: {target}"""
+"""
 
     try:
         response = call_groq(prompt)
+        plan = safe_parse_json(response)
         
-        # Clean response (remove markdown code blocks if any)
-        response = response.strip()
-        if response.startswith("on"):
-            response = response[7:]
-        if response.startswith("```"):
-            response = response[3:]
-        if response.endswith("```"):
-            response = response[:-3]
-        response = response.strip()
-        
-        plan = json.loads(response)
-        
-        # Validate and sanitize
-        if plan.get("tool") not in ["nmap", "nikto"]:
-             # If AI hallucinated or refused, fallback to forced tool if present
-             if forced_tool:
-                 return plan_scan_rule_based(target, forced_tool)
-             raise ValueError(f"Invalid tool: {plan.get('tool')}. Must be 'nmap' or 'nikto'")
+        if "error" in plan and "tool" not in plan:
+             # If parsing failed, return default
+             return plan_scan_rule_based(target, forced_tool)
+
+        # Validate tool
+        allowed = ["nmap", "nikto", "gobuster", "dirb", "sqlmap"]
+        if plan.get("tool") not in allowed:
+             if forced_tool and forced_tool in allowed:
+                  return plan_scan_rule_based(target, forced_tool)
+             plan["tool"] = "nmap" # Default fallback
         
         command_str = plan.get("command")
         if not command_str:
-            raise ValueError("Missing 'command' in AI response")
-            
-        # Security: Use shlex to parse the command string
-        command_list = shlex.split(command_str)
-        plan["command"] = command_list
+             default_plan = plan_scan_rule_based(target, forced_tool)
+             plan["command"] = default_plan["command"]
+             plan["rationale"] = "Fallback to default due to empty AI command."
+        else:
+             # Security: Parse with shlex
+             plan["command"] = shlex.split(command_str)
         
-        # Override tool name just in case
-        if forced_tool and plan.get("tool") != forced_tool:
-             print(f"⚠️ AI returned {plan.get('tool')} but user forced {forced_tool}. Fallback to rule-based.")
-             return plan_scan_rule_based(target, forced_tool)
-
-        # Log untuk debugging
-        print(f"✅ AI Planner selected: {plan.get('tool')} - {plan.get('reason', 'N/A')}")
+        # Logging
+        print(f"✅ AI Expert Planner selected: {plan.get('tool')} - {plan.get('rationale')}")
             
         return plan
     except Exception as e:
-        print(f"❌ AI Planner Error: {str(e)}")
+        print(f"❌ AI Expert Planner Error: {str(e)}")
         # Fallback to rule based with forced tool
         return plan_scan_rule_based(target, forced_tool)
 
@@ -134,7 +132,7 @@ Target: {target}"""
 # ==========================================================
 # PUBLIC API (DIPANGGIL ORCHESTRATOR)
 # ==========================================================
-def plan_scan(target: str, use_ai: bool = False, tool: str = None) -> Dict[str, str]:
+def plan_scan(target: str, use_ai: bool = False, tool: str = None, history: str = None, deep_scan: bool = False) -> Dict[str, str]:
     """
     Entry point planner.
 
@@ -145,9 +143,8 @@ def plan_scan(target: str, use_ai: bool = False, tool: str = None) -> Dict[str, 
 
     if use_ai:
         try:
-            print(f"🤖 Using AI Planner for target: {target} (Tool: {tool})")
-            result = plan_scan_ai(target, forced_tool=tool)
-            print(f"✅ AI Planner result: {result.get('tool')} - {result.get('command')}")
+            print(f"🤖 Using AI Expert Planner for target: {target} (Mode: {'Deep' if deep_scan else 'Standard'})")
+            result = plan_scan_ai(target, forced_tool=tool, history=history, deep_scan=deep_scan)
             return result
         except Exception as e:
             # Fallback ke rule-based jika AI gagal

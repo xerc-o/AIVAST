@@ -17,14 +17,19 @@ def _safe_json_loads(data_string):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=False, nullable=False) # Changed to non-unique to allow multiple "John Doe"s
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256))
+    password_hash = db.Column(db.String(256), nullable=True) # Now nullable
+    google_id = db.Column(db.String(128), unique=True, nullable=True)
+    profile_pic = db.Column(db.String(512), nullable=True)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        if password:
+            self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        if not self.password_hash:
+            return False
         return check_password_hash(self.password_hash, password)
 
 
@@ -33,7 +38,8 @@ class ChatSession(db.Model):
     __tablename__ = "chat_session"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # Nullable for guest
+    anon_id = db.Column(db.String(36), nullable=True, index=True) # For identifying guests
     title = db.Column(db.String(200), nullable=False, default="New Chat")
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -48,7 +54,8 @@ class ChatSession(db.Model):
             "id": self.id,
             "title": self.title,
             "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
+            "updated_at": self.updated_at.isoformat(),
+            "is_guest": self.user_id is None
         }
 
 class ChatMessage(db.Model):
@@ -77,7 +84,7 @@ class ScanHistory(db.Model):
     __tablename__ = "scan_history"
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) # Nullable for guest
     session_id = db.Column(db.Integer, db.ForeignKey('chat_session.id'), nullable=True) # Link to session
     target = db.Column(db.String(500), nullable=False, index=True)
     tool = db.Column(db.String(50), nullable=False)
@@ -93,6 +100,7 @@ class ScanHistory(db.Model):
     execution_result = db.Column(db.Text)  # JSON string
     analysis_result = db.Column(db.Text)   # JSON string
     risk_level = db.Column(db.String(20), index=True)
+    rationale = db.Column(db.Text) # New field to store AI's explanation for choosing the tool/command
     
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     start_time = db.Column(db.DateTime, nullable=True)
@@ -110,7 +118,8 @@ class ScanHistory(db.Model):
             "risk_level": self.risk_level,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "execution": _safe_json_loads(self.execution_result),
-            "analysis": _safe_json_loads(self.analysis_result)
+            "analysis": _safe_json_loads(self.analysis_result),
+            "rationale": self.rationale
         }
     
     def __repr__(self):

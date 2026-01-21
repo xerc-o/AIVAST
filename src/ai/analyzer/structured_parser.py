@@ -134,18 +134,63 @@ def parse_nikto_xml(xml_output: str) -> Dict:
             }
         
         return result
-    except ET.ParseError as e:
-        return {"parsed": False, "error": f"XML parse error: {str(e)}"}
     except Exception as e:
         return {"parsed": False, "error": f"Parse error: {str(e)}"}
 
 
+def parse_gobuster_output(stdout: str) -> Dict:
+    """
+    Parse gobuster CLI output to extract found directories.
+    Example line: Found: /admin (Status: 200)
+    """
+    import re
+    findings = []
+    pattern = re.compile(r"Found: (.*?) \(Status: (\d+)\)")
+    
+    for line in stdout.splitlines():
+        match = pattern.search(line)
+        if match:
+            findings.append({
+                "path": match.group(1),
+                "status": int(match.group(2))
+            })
+            
+    return {
+        "findings": findings,
+        "parsed": len(findings) > 0,
+        "format": "text-extracted"
+    }
+
+
+def parse_sqlmap_output(stdout: str) -> Dict:
+    """
+    Parse sqlmap output to detect if a target is vulnerable.
+    """
+    import re
+    vulnerable = False
+    if "is vulnerable" in stdout.lower() or "confirmed" in stdout.lower():
+        vulnerable = True
+        
+    # Extract some basic details if possible
+    payloads = re.findall(r"Payload: (.*)", stdout)
+    
+    return {
+        "vulnerable": vulnerable,
+        "payloads": payloads[:5], # Just first 5
+        "parsed": True,
+        "format": "text-extracted"
+    }
+
+
 def _get_xml_content(stdout: str, stderr: str) -> Optional[str]:
-    """Extracts XML content from stdout or stderr."""
-    if "<?xml" in stdout:
-        return stdout
-    if "<?xml" in stderr:
-        return stderr
+    """Extracts XML content from stdout or stderr, handling surrounding text."""
+    for text in [stdout, stderr]:
+        if "<?xml" in text:
+            start = text.find("<?xml")
+            # find matching end tag if possible, or just the rest if it's EOF
+            # Nikto ends with </niktoscan>
+            # Nmap ends with </nmaprun>
+            return text[start:]
     return None
 
 
@@ -161,14 +206,20 @@ def extract_structured_data(tool: str, stdout: str, stderr: str = "") -> Dict:
     Returns:
         Dict dengan structured data atau empty dict jika parsing gagal
     """
-    xml_content = _get_xml_content(stdout, stderr)
-    if not xml_content:
-        return {"parsed": False, "format": "text"}
-
     if tool == "nmap":
-        return parse_nmap_xml(xml_content)
+        xml_content = _get_xml_content(stdout, stderr)
+        if xml_content:
+            return parse_nmap_xml(xml_content)
     
     elif tool == "nikto":
-        return parse_nikto_xml(xml_content)
+        xml_content = _get_xml_content(stdout, stderr)
+        if xml_content:
+            return parse_nikto_xml(xml_content)
+            
+    elif tool == "gobuster":
+        return parse_gobuster_output(stdout)
+            
+    elif tool == "sqlmap":
+        return parse_sqlmap_output(stdout)
     
-    return {"parsed": False, "error": "Unknown tool"}
+    return {"parsed": False, "error": "Unknown tool or no structured data available"}

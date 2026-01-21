@@ -9,54 +9,56 @@ class NmapAnalyzer(BaseAnalyzer):
     def build_prompt(self, data: dict) -> str:
         execution = data.get("execution", {})
         stdout = execution.get("stdout", "")
+        target = data.get("target", "Unknown")
         
         # Coba extract structured data
         structured = extract_structured_data("nmap", stdout)
         
-        # Jika berhasil parse, gunakan structured data
         if structured.get("parsed"):
-            structured_summary = f"""
-Parsed Nmap Data:
-- Hosts found: {len(structured.get('hosts', []))}
-- Ports found: {len(structured.get('ports', []))}
-- Services: {len(structured.get('services', []))}
-
-            Ports and Services:
-{json.dumps(structured.get('ports', []), indent=2)}
-"""
-            nmap_data = structured_summary
+            nmap_data = json.dumps(structured, indent=2)
         else:
-            nmap_data = stdout
+            nmap_data = self.truncate_text(stdout)
         
         return f"""
-You are a cybersecurity analyst. Your goal is to analyze the Nmap scan results and provide a clear, concise, and actionable security report.
+You are a Senior Cybersecurity Analyst. Analyze the Nmap scan results with clinical precision and deep technical insight.
 
-Return ONLY valid JSON.
-DO NOT include explanations outside the JSON.
-DO NOT use markdown formatting (e.g., ```json).
+Target: {target}
+Nmap Output:
+{nmap_data}
+
+TASK:
+Generate a high-quality, professional security analysis in JSON format.
+Your analysis must be CRITICAL, DETAILED, and ACTIONABLE.
 
 JSON schema:
 {{
-  "risk": "info|low|medium|high|critical",
-  "summary": "A comprehensive summary of the key findings, potential vulnerabilities, and the overall security posture based on the Nmap output. This summary should clearly state the most important security implications.",
-  "findings": [
-    {{
-      "port": "string",
-      "service": "string",
-      "vulnerability": "string (e.g., 'Outdated software', 'Weak configuration', 'Unnecessary service')",
-      "severity": "low|medium|high|critical",
-      "details": "string (e.g., 'FTP service version X.Y.Z is known to have vulnerability CVE-YYYY-NNNN')",
-      "recommendation": "string (e.g., 'Update FTP server to latest version', 'Disable anonymous FTP access')"
-    }}
-  ],
-  "recommendations": [
-    "string (general high-level recommendations, e.g., 'Implement a robust patching strategy', 'Review exposed services', 'Configure firewall rules more strictly')",
-    "string"
-  ]
+  "metadata": {{
+    "target": "{target}",
+    "confidence": "Low|Medium|High"
+  }},
+  "analysis": "Detailed technical analysis of what was observed. Explain the state of the target based ONLY on the data.",
+  "issue": {{
+    "type": "Primary vulnerability class or configuration issue",
+    "severity": "info|low|medium|high|critical",
+    "endpoint": "Affected port/service",
+    "parameter": "N/A or specific service detail",
+    "owasp": "Relevant OWASP category if applicable"
+  }},
+  "evidence": {{
+    "payload": "N/A or specific probe/flag used",
+    "response_behavior": "Observation that confirms the status (e.g. 'Server responded with version X')"
+  }},
+  "impact": "High-level professional assessment of what an attacker could achieve.",
+  "recommendations": ["List of specific, actionable mitigation steps"],
+  "next_actions": ["Strategic next steps for further testing or investigation"],
+  "summary": "One-sentence executive summary of the finding."
 }}
 
-Nmap output (structured data or raw text if parsing failed):
-{nmap_data}
-
-Based on the Nmap output provided, generate the JSON response. Pay close attention to the version numbers of services, common misconfigurations, and known vulnerabilities associated with detected services. If specific CVEs or detailed recommendations are not immediately apparent from the Nmap output alone, provide general security best practices relevant to the identified services.
+RULES:
+- Return ONLY valid JSON.
+- **Tool Awareness**: You ONLY have access to these internal tools: `nmap`, `gobuster`, `nikto`, `sqlmap`. NEVER suggest Burp Suite.
+- **Strategic Chaining**: If web services are found, suggest `gobuster` or `nikto` in 'next_actions'.
+- Be technical and professional.
+- Avoid generic advice; be specific to the versions or services found.
+- If multiple issues exist, focus on the most critical one in the 'issue' block, but mention others in 'analysis'.
 """
